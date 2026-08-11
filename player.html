@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What Crisis? — Player</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="player-config.css">
+  <link rel="stylesheet" href="player.css">
+</head>
+<body>
+  <div class="player-window">
+    <div class="player-stage">
+      <img
+        class="player-background"
+        src="assets/player-background.png"
+        alt=""
+        width="1024"
+        height="682"
+        decoding="async"
+      />
+
+      <div class="player-video-inner" aria-hidden="true">
+        <video
+          id="player-video"
+          class="player-video"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"
+        ></video>
+      </div>
+
+      <div class="player-ui">
+        <h1 class="player-title">
+          <span>What</span>
+          <span>Crisis?</span>
+        </h1>
+
+        <nav class="player-nav" aria-label="Site navigation">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="#" class="nav-link nav-link--pending" id="media-link">Media</a>
+        </nav>
+
+        <ol class="track-list" id="track-list"></ol>
+
+        <div class="player-controls">
+          <button type="button" class="ctrl-btn" id="btn-prev" aria-label="Previous track">&#9664;&#9664;</button>
+          <button type="button" class="ctrl-btn" id="btn-play" aria-label="Play or pause">&#9654;</button>
+          <button type="button" class="ctrl-btn" id="btn-next" aria-label="Next track">&#9654;&#9654;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="tracks.js"></script>
+  <script src="player.js"></script>
+</body>
+</html>

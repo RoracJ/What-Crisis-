@@ -1,0 +1,24 @@
+/*
+ * ═══════════════════════════════════════════════════════════
+ *  INNER PORTAL ALIGNMENT — edit only this file to tune
+ * ═══════════════════════════════════════════════════════════
+ *
+ * Controls the video window inside the dark center opening.
+ * The blue outer ring comes from the static artwork and stays visible.
+ *
+ * Visual tuning: add ?portal-debug to the URL, or add class="debug"
+ * to the <video> element to show a red alignment outline.
+ */
+
+.hero-stage {
+  /* Source artwork dimensions (portrait) */
+  --hero-aspect-w: 759;
+  --hero-aspect-h: 1024;
+
+  /* Inner dark circle — center position (% of artwork width/height) */
+  --portal-inner-x: 55.5%;
+  --portal-inner-y: 69.5%;
+
+  /* Inner dark circle — diameter (% of artwork width) */
+  --portal-inner-size: 11.2%;
+}

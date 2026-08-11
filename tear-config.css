@@ -1,0 +1,26 @@
+/*
+ * ═══════════════════════════════════════════════════════════
+ *  TORN PAPER REVEAL — edit only this file to tune
+ * ═══════════════════════════════════════════════════════════
+ *
+ * All values are relative to the rendered artwork box.
+ */
+
+.hero-stage {
+  /* Where the tear line sits from the left edge (% of artwork width) */
+  --tear-start-x: 16%;
+
+  /* Width of the revealed charcoal strip (= tear line position) */
+  /* Max width of jagged tear (peaks extend to ~20% of artwork) */
+  --reveal-width: 20%;
+
+  /* Animation duration */
+  --tear-duration: 1.8s;
+}
+
+@media (max-width: 640px) {
+  .hero-stage {
+    --reveal-width: 24%;
+    --tear-start-x: 22%;
+  }
+}

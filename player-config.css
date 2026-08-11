@@ -1,0 +1,19 @@
+/*
+ * ═══════════════════════════════════════════════════════════
+ *  PLAYER VIDEO ALIGNMENT — edit only this file to tune
+ * ═══════════════════════════════════════════════════════════
+ *
+ * Position/size relative to the rendered background image.
+ * Debug: add ?video-debug to the URL.
+ */
+
+.player-stage {
+  /* Source artwork dimensions (landscape) */
+  --player-aspect-w: 1024;
+  --player-aspect-h: 682;
+
+  /* Inner dark circle — center & diameter (% of image width / height) */
+  --video-x: 50%;
+  --video-y: 56%;
+  --video-size: 20%;
+}

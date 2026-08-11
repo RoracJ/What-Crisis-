@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What Crisis?</title>
+  <link rel="stylesheet" href="portal-config.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+
+  <header class="hero">
+    <div class="hero-stage">
+      <img
+        class="hero-background"
+        src="assets/background.png"
+        alt=""
+        width="759"
+        height="1024"
+        decoding="async"
+        fetchpriority="high"
+      />
+
+      <div class="portal-inner" aria-hidden="true">
+        <video
+          class="portal-video"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"
+          src="videos/portal.mov"
+        ></video>
+      </div>
+
+      <button type="button" class="portal-open" id="open-player" aria-label="Open music player"></button>
+    </div>
+  </header>
+
+  <script src="script.js"></script>
+</body>
+</html>
