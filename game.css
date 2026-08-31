@@ -1,0 +1,239 @@
+.game-trigger {
+  position: absolute;
+  left: var(--game-trigger-x);
+  top: var(--game-trigger-y);
+  width: var(--game-trigger-w);
+  height: var(--game-trigger-h);
+  transform: translate(-50%, -50%);
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  z-index: 3;
+}
+
+.game-trigger:focus-visible {
+  outline: 2px solid rgba(216, 210, 194, 0.45);
+  outline-offset: 3px;
+}
+
+body.game-debug .game-trigger {
+  outline: 2px dashed rgba(232, 80, 54, 0.85);
+  outline-offset: 2px;
+}
+
+.crisis-game {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: none;
+  background: #000;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.crisis-game.is-open {
+  display: block;
+}
+
+.crisis-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.crisis-fire {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  background:
+    url("assets/game/Fire.png") center center / cover no-repeat,
+    radial-gradient(circle at center, rgba(232, 64, 32, 0.85) 0%, rgba(90, 8, 0, 0.55) 55%, rgba(0, 0, 0, 0.2) 100%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.45);
+}
+
+.crisis-fire.is-flash {
+  animation: crisis-death-flash 0.48s ease-out forwards;
+}
+
+.crisis-game.is-lab .crisis-canvas,
+.crisis-game.is-lab .crisis-fire {
+  display: none;
+}
+
+.crisis-prompt {
+  position: absolute;
+  left: 50%;
+  top: 18%;
+  transform: translateX(-50%);
+  width: min(34rem, 88vw);
+  margin: 0;
+  padding: 0 0.5rem;
+  font-family: 'Special Elite', 'Courier New', Courier, monospace;
+  font-size: clamp(0.95rem, 2.6vw, 1.45rem);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  line-height: 1.45;
+  text-align: center;
+  text-transform: uppercase;
+  color: #f3ece0;
+  text-shadow: 0 1px 0 #000, 0 0 18px rgba(0, 0, 0, 0.85);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+  z-index: 2;
+}
+
+.crisis-prompt.is-on {
+  opacity: 1;
+}
+
+.crisis-lab {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: #050505;
+}
+
+.crisis-game.is-lab .crisis-lab {
+  display: grid;
+  place-items: center;
+}
+
+.lab-machine {
+  --lab-aspect-w: 1185;
+  --lab-aspect-h: 928;
+  --lab-port-x: 50%;
+  --lab-port-y: 49%;
+  --lab-port-size: 36%;
+  --lab-knob-x: 83.5%;
+  --lab-knob-y: 79%;
+  --lab-knob-size: 12%;
+  --lab-light-x: 13.2%;
+  --lab-light-y: 16.5%;
+  --lab-light-size: 10.5%;
+  --lab-gauge-x: 85.8%;
+  --lab-gauge-y: 18.5%;
+  --lab-gauge-size: 19%;
+  position: relative;
+  width: min(100vw, calc(100dvh * 1185 / 928));
+  max-height: 100dvh;
+  aspect-ratio: 1185 / 928;
+}
+
+.lab-panel {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  z-index: 2;
+}
+
+.lab-port {
+  position: absolute;
+  left: var(--lab-port-x);
+  top: var(--lab-port-y);
+  width: var(--lab-port-size);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  overflow: hidden;
+  z-index: 3;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.lab-port.is-on {
+  visibility: visible;
+}
+
+.lab-video {
+  display: none;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.lab-video.is-on {
+  display: block;
+  pointer-events: auto;
+}
+
+.lab-video::-webkit-media-controls,
+.lab-video::-webkit-media-controls-enclosure {
+  display: none !important;
+}
+
+.lab-light,
+.lab-gauge {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  z-index: 3;
+}
+
+.lab-light {
+  left: var(--lab-light-x);
+  top: var(--lab-light-y);
+  width: var(--lab-light-size);
+}
+
+.lab-gauge {
+  left: var(--lab-gauge-x);
+  top: var(--lab-gauge-y);
+  width: var(--lab-gauge-size);
+}
+
+.lab-knob {
+  position: absolute;
+  left: var(--lab-knob-x);
+  top: var(--lab-knob-y);
+  width: var(--lab-knob-size);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  z-index: 4;
+}
+
+.lab-knob img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.lab-knob.is-on img {
+  visibility: hidden;
+}
+
+.lab-knob:focus-visible {
+  outline: 2px solid rgba(216, 210, 194, 0.45);
+  outline-offset: 3px;
+}
+
+@keyframes crisis-death-flash {
+  0% { opacity: 0; transform: scale(0.4); }
+  18% { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 0; transform: scale(1.7); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crisis-fire.is-flash {
+    animation: crisis-death-flash 0.35s linear forwards;
+  }
+}

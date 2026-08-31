@@ -13,6 +13,21 @@ if (openPlayerBtn) {
   });
 }
 
+const ambient = window.CrisisAmbient;
+
+function startHomeAudio() {
+  if (!ambient) return;
+  if (document.getElementById('crisis-game')?.classList.contains('is-open')) return;
+  ambient.play('home');
+}
+
+if (ambient) {
+  ambient.play('home');
+  const unlockHome = () => startHomeAudio();
+  window.addEventListener('pointerdown', unlockHome, { once: true });
+  window.addEventListener('keydown', unlockHome, { once: true });
+}
+
 // Portal video — reduced motion + autoplay-blocked fallback only.
 const portalVideo = document.querySelector('.portal-video');
 const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');

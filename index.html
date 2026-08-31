@@ -4,8 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>What Crisis?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="portal-config.css">
+  <link rel="stylesheet" href="game-config.css">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="game.css">
 </head>
 <body>
   <div class="noise" aria-hidden="true"></div>
@@ -34,10 +39,40 @@
         ></video>
       </div>
 
+      <button type="button" class="game-trigger" id="open-game" aria-label="Something in the crowd looks back"></button>
       <button type="button" class="portal-open" id="open-player" aria-label="Open music player"></button>
     </div>
   </header>
 
+  <div id="crisis-game" class="crisis-game" aria-hidden="true">
+    <canvas id="crisis-canvas" class="crisis-canvas"></canvas>
+    <div id="crisis-death-flash" class="crisis-fire" aria-hidden="true"></div>
+    <p id="crisis-prompt" class="crisis-prompt">CAN YOU REACH THE OBJECT OF YOUR DESIRE?</p>
+    <div class="crisis-lab" id="crisis-lab">
+      <div class="lab-machine">
+        <div class="lab-port">
+          <video
+            id="lab-video"
+            class="lab-video"
+            muted
+            loop
+            playsinline
+            preload="auto"
+            src="videos/portal.mov"
+          ></video>
+        </div>
+        <img class="lab-panel" src="assets/game/Lab.png" alt="" draggable="false">
+        <img id="lab-light" class="lab-light" src="assets/game/Light.png" alt="" hidden>
+        <img id="lab-gauge" class="lab-gauge" src="assets/game/Gauge.png" alt="" hidden>
+        <button type="button" id="lab-knob" class="lab-knob" aria-label="Machine control">
+          <img src="assets/game/Knob.png" alt="">
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="ambient.js"></script>
   <script src="script.js"></script>
+  <script src="game.js"></script>
 </body>
 </html>
