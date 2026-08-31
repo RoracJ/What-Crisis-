@@ -111,15 +111,18 @@ body.game-debug .game-trigger {
   --lab-port-x: 50%;
   --lab-port-y: 49%;
   --lab-port-size: 36%;
-  --lab-knob-x: 83.5%;
-  --lab-knob-y: 79%;
-  --lab-knob-size: 12%;
-  --lab-light-x: 13.2%;
-  --lab-light-y: 16.5%;
-  --lab-light-size: 10.5%;
-  --lab-gauge-x: 85.8%;
-  --lab-gauge-y: 18.5%;
-  --lab-gauge-size: 19%;
+  --lab-knob-x: 84.9%;
+  --lab-knob-y: 81.15%;
+  --lab-knob-w: 24.2%;
+  --lab-knob-h: 37.2%;
+  --lab-light-x: 13.3%;
+  --lab-light-y: 15.9%;
+  --lab-light-w: 16.5%;
+  --lab-light-h: 20.7%;
+  --lab-gauge-x: 85.3%;
+  --lab-gauge-y: 19%;
+  --lab-gauge-w: 28.5%;
+  --lab-gauge-h: 34.1%;
   position: relative;
   width: min(100vw, calc(100dvh * 1185 / 928));
   max-height: 100dvh;
@@ -177,8 +180,7 @@ body.game-debug .game-trigger {
 .lab-light,
 .lab-gauge {
   position: absolute;
-  transform: translate(-50%, -50%);
-  object-fit: contain;
+  object-fit: fill;
   pointer-events: none;
   user-select: none;
   z-index: 3;
@@ -187,21 +189,25 @@ body.game-debug .game-trigger {
 .lab-light {
   left: var(--lab-light-x);
   top: var(--lab-light-y);
-  width: var(--lab-light-size);
+  width: var(--lab-light-w);
+  height: var(--lab-light-h);
+  transform: translate(-50%, -50%);
 }
 
 .lab-gauge {
   left: var(--lab-gauge-x);
   top: var(--lab-gauge-y);
-  width: var(--lab-gauge-size);
+  width: var(--lab-gauge-w);
+  height: var(--lab-gauge-h);
+  transform: translate(-50%, -50%);
 }
 
 .lab-knob {
   position: absolute;
   left: var(--lab-knob-x);
   top: var(--lab-knob-y);
-  width: var(--lab-knob-size);
-  aspect-ratio: 1;
+  width: var(--lab-knob-w);
+  height: var(--lab-knob-h);
   transform: translate(-50%, -50%);
   padding: 0;
   border: none;
@@ -213,7 +219,7 @@ body.game-debug .game-trigger {
 .lab-knob img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: fill;
   pointer-events: none;
 }
 
