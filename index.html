@@ -47,9 +47,24 @@
   <div id="crisis-game" class="crisis-game" aria-hidden="true">
     <canvas id="crisis-canvas" class="crisis-canvas"></canvas>
     <div id="crisis-death-flash" class="crisis-fire" aria-hidden="true"></div>
-    <p id="crisis-prompt" class="crisis-prompt">CAN YOU REACH THE OBJECT OF YOUR DESIRE?</p>
+    <p id="crisis-prompt" class="crisis-prompt">Can one truly reach the object of one's desire?</p>
     <div class="crisis-lab" id="crisis-lab">
       <div class="lab-machine">
+        <svg class="lab-filters" aria-hidden="true">
+          <filter id="lab-logo-grit" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.62" numOctaves="4" seed="11" result="noise" />
+            <feColorMatrix type="saturate" values="0" in="noise" result="grain" />
+            <feComponentTransfer in="grain" result="grainSoft">
+              <feFuncA type="linear" slope="0.32" />
+            </feComponentTransfer>
+            <feBlend in="SourceGraphic" in2="grainSoft" mode="multiply" result="gritty" />
+            <feComponentTransfer in="gritty">
+              <feFuncR type="linear" slope="1.12" />
+              <feFuncG type="linear" slope="1.12" />
+              <feFuncB type="linear" slope="1.12" />
+            </feComponentTransfer>
+          </filter>
+        </svg>
         <div class="lab-port">
           <video
             id="lab-video"
@@ -62,6 +77,7 @@
           ></video>
         </div>
         <img class="lab-panel" src="assets/game/Lab.png" alt="" draggable="false">
+        <img class="lab-logo" src="assets/game/Logo.png" alt="" draggable="false">
         <img id="lab-light" class="lab-light" src="assets/game/Light.png" alt="" hidden>
         <img id="lab-gauge" class="lab-gauge" src="assets/game/Gauge.png" alt="" hidden>
         <button type="button" id="lab-knob" class="lab-knob" aria-label="Machine control">

@@ -24,22 +24,31 @@
   --lab-aspect-h: 928;
 
   /* Inner porthole glass — video sits here, metal ring stays visible */
-  --lab-port-x: 50%;
-  --lab-port-y: 49%;
-  --lab-port-size: 36%;
+  --lab-port-x: 48.1%;
+  --lab-port-y: 48.9%;
+  --lab-port-size: 46%;
+  --lab-video-scale: 1.25;
 
-  --lab-knob-x: 84.9%;
-  --lab-knob-y: 81.15%;
-  --lab-knob-w: 24.2%;
-  --lab-knob-h: 37.2%;
+  /* Sprite registration: left/top are the PNG canvas origin, not the visual center.
+     Knob.png visible center is (63, 81) in a 126×151 canvas; baked rim center is (999, 748). */
+  --lab-knob-x: 75.053%;
+  --lab-knob-y: 65.416%;
+  --lab-knob-w: 18.501%;
+  --lab-knob-h: 28.313%;
 
-  --lab-light-x: 13.3%;
-  --lab-light-y: 15.9%;
-  --lab-light-w: 16.5%;
-  --lab-light-h: 20.7%;
+  --lab-light-x: 13.25%;
+  --lab-light-y: 16.4%;
+  --lab-light-w: 14.6%;
+  --lab-light-h: 18.3%;
 
-  --lab-gauge-x: 85.3%;
-  --lab-gauge-y: 19%;
-  --lab-gauge-w: 28.5%;
-  --lab-gauge-h: 34.1%;
+  --lab-gauge-x: 84.9%;
+  --lab-gauge-y: 19.5%;
+  --lab-gauge-w: 21.8%;
+  --lab-gauge-h: 26.1%;
+
+  /* Lower-left medallion — covers baked-in WC emblem, both states */
+  --lab-logo-x: 14.4%;
+  --lab-logo-y: 82.5%;
+  --lab-logo-w: 27.6%;
+  --lab-logo-h: 23.5%;
 }

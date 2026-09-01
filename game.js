@@ -62,6 +62,7 @@
   let clouds = [];
   let debris = [];
   let death = null;
+  let spawnUntil = 0;
   let labOn = false;
   let pointer = null;
   let pointerOrigin = null;
@@ -200,6 +201,7 @@
     };
     briefcase = { mode: 'idle', x: player.x, y: player.y, angle: 0 };
     lastFacing = { x: 1, y: 0 };
+    spawnUntil = performance.now() + 500;
   }
 
   function makeWalker(track, x) {
@@ -208,6 +210,7 @@
       y: track.y,
       dir: track.dir,
       speed: track.speed,
+      mirror: !!track.mirror,
       alive: true
     };
   }
@@ -234,8 +237,8 @@
     ];
 
     const walkerTracks = [
-      { y: 0.65, dir: -1, speed: 0.09 },
-      { y: 0.88, dir: 1, speed: 0.075 }
+      { y: 0.65, dir: -1, speed: 0.09, mirror: true },
+      { y: 0.88, dir: 1, speed: 0.075, mirror: true }
     ];
     walkerTracks.forEach((track, i) => {
       for (let n = 0; n < 2; n += 1) {
@@ -294,6 +297,29 @@
     const bh = b.h * (1 - padB * 2);
     return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
   }
+
+  function aabb(a, b) {
+    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  }
+
+  // Collide against the visible body, not the full tall/wide sprite canvas.
+  function coreBox(rect, spec) {
+    if (!rect) return null;
+    const w = Math.max(2, rect.w * spec.xFrac);
+    const h = Math.max(2, rect.h * spec.yFrac);
+    return {
+      x: rect.x + (rect.w - w) / 2,
+      y: rect.y + (rect.h - h) / 2 + rect.h * (spec.yBias || 0),
+      w,
+      h
+    };
+  }
+
+  const PLAYER_HURT = { xFrac: 0.32, yFrac: 0.22, yBias: 0.18 };
+  const PLAYER_VS_SAUCER = { xFrac: 0.36, yFrac: 0.50, yBias: 0.02 };
+  const WALKER_HURT = { xFrac: 0.30, yFrac: 0.22, yBias: 0.16 };
+  const CAR_HURT = { xFrac: 0.50, yFrac: 0.38, yBias: 0.04 };
+  const SAUCER_HURT = { xFrac: 0.58, yFrac: 0.62, yBias: 0 };
 
   function throwBriefcase() {
     if (death || !player || briefcase.mode !== 'idle') return;
@@ -472,7 +498,6 @@
 
     saucers.forEach((s) => {
       const bob = Math.sin(s.phase) * 0.012;
-      drawShadow('shadow3', s.x, s.y + 0.04, 0.16);
       s.rect = drawSprite('Saucer', s.x, s.y + bob, 0.095, { flip: s.dir < 0 });
     });
 
@@ -484,14 +509,13 @@
     walkers.forEach((w) => {
       if (!w.alive) return;
       drawShadow('shadow1', w.x, w.y + 0.01, 0.08);
-      w.rect = drawSprite('Headless', w.x, w.y, 0.175, { flip: w.dir < 0, foot: true });
+      w.rect = drawSprite('Headless', w.x, w.y, 0.175, { flip: (w.dir < 0) !== !!w.mirror, foot: true });
     });
 
     let playerRect = null;
     if (death) {
       drawDeathFireball();
     } else {
-      drawShadow('shadow2', player.x, player.y + 0.012, 0.09);
       playerRect = drawSprite('Headed', player.x, player.y, 0.19, {
         flip: lastFacing.x < 0,
         foot: true
@@ -517,10 +541,12 @@
       });
     }
 
-    if (playerRect && !death) {
-      const killed = cars.some((c) => c.rect && hit(playerRect, c.rect, 0.22, 0.14))
-        || walkers.some((w) => w.alive && w.rect && hit(playerRect, w.rect, 0.24, 0.2))
-        || saucers.some((s) => s.rect && hit(playerRect, s.rect, 0.24, 0.18));
+    if (playerRect && !death && now >= spawnUntil) {
+      const pBox = coreBox(playerRect, PLAYER_HURT);
+      const inLane = (laneY, half = 0.048) => Math.abs(player.y - laneY) <= half;
+      const killed = cars.some((c) => c.rect && inLane(c.y) && aabb(pBox, coreBox(c.rect, CAR_HURT)))
+        || walkers.some((w) => w.alive && w.rect && inLane(w.y) && aabb(pBox, coreBox(w.rect, WALKER_HURT)))
+        || saucers.some((s) => s.rect && aabb(coreBox(playerRect, PLAYER_VS_SAUCER), coreBox(s.rect, SAUCER_HURT)));
       if (killed) {
         killPlayer(now, playerRect);
         drawDeathFireball();

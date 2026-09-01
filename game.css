@@ -106,27 +106,10 @@ body.game-debug .game-trigger {
 }
 
 .lab-machine {
-  --lab-aspect-w: 1185;
-  --lab-aspect-h: 928;
-  --lab-port-x: 50%;
-  --lab-port-y: 49%;
-  --lab-port-size: 36%;
-  --lab-knob-x: 84.9%;
-  --lab-knob-y: 81.15%;
-  --lab-knob-w: 24.2%;
-  --lab-knob-h: 37.2%;
-  --lab-light-x: 13.3%;
-  --lab-light-y: 15.9%;
-  --lab-light-w: 16.5%;
-  --lab-light-h: 20.7%;
-  --lab-gauge-x: 85.3%;
-  --lab-gauge-y: 19%;
-  --lab-gauge-w: 28.5%;
-  --lab-gauge-h: 34.1%;
   position: relative;
-  width: min(100vw, calc(100dvh * 1185 / 928));
+  width: min(100vw, calc(100dvh * var(--lab-aspect-w) / var(--lab-aspect-h)));
   max-height: 100dvh;
-  aspect-ratio: 1185 / 928;
+  aspect-ratio: var(--lab-aspect-w) / var(--lab-aspect-h);
 }
 
 .lab-panel {
@@ -165,6 +148,8 @@ body.game-debug .game-trigger {
   object-fit: cover;
   border-radius: 50%;
   cursor: pointer;
+  transform: scale(var(--lab-video-scale));
+  transform-origin: center center;
 }
 
 .lab-video.is-on {
@@ -178,7 +163,8 @@ body.game-debug .game-trigger {
 }
 
 .lab-light,
-.lab-gauge {
+.lab-gauge,
+.lab-logo {
   position: absolute;
   object-fit: fill;
   pointer-events: none;
@@ -202,13 +188,30 @@ body.game-debug .game-trigger {
   transform: translate(-50%, -50%);
 }
 
+.lab-filters {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.lab-logo {
+  left: var(--lab-logo-x);
+  top: var(--lab-logo-y);
+  width: var(--lab-logo-w);
+  height: var(--lab-logo-h);
+  transform: translate(-50%, -50%);
+  filter: url(#lab-logo-grit) brightness(1.88) contrast(1.1);
+  -webkit-mask-image: radial-gradient(circle closest-side, #000 78%, transparent 80%);
+  mask-image: radial-gradient(circle closest-side, #000 78%, transparent 80%);
+}
+
 .lab-knob {
   position: absolute;
   left: var(--lab-knob-x);
   top: var(--lab-knob-y);
   width: var(--lab-knob-w);
   height: var(--lab-knob-h);
-  transform: translate(-50%, -50%);
   padding: 0;
   border: none;
   background: transparent;
