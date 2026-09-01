@@ -126,7 +126,12 @@
       if (currentIndex < 0 || typeof tracks === 'undefined') return;
       if (window.SiteAccess && !window.SiteAccess.allows('artwork')) return;
       const track = tracks[currentIndex];
-      if (track) openTrackArtwork(track.id);
+      if (!track) return;
+      audio.pause();
+      video.pause();
+      isPlaying = false;
+      updatePlayButton();
+      openTrackArtwork(track.id);
     });
   }
 

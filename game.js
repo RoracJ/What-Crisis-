@@ -571,10 +571,25 @@
     requestAnimationFrame(loop);
   }
 
+  function playLabVideo() {
+    if (!labVideo || reducedMotion.matches || !labOn) return;
+    labVideo.muted = true;
+    const kick = () => {
+      if (!labOn || reducedMotion.matches) return;
+      if (labVideo.paused) labVideo.play().catch(() => {});
+    };
+    kick();
+    labVideo.addEventListener('canplay', kick, { once: true });
+    labVideo.addEventListener('loadeddata', kick, { once: true });
+    requestAnimationFrame(kick);
+    setTimeout(kick, 50);
+    setTimeout(kick, 200);
+  }
+
   function setLabOff() {
     labOn = false;
     if (labLight) labLight.hidden = true;
-    if (labGauge) labGauge.hidden = true;
+    if (labGauge) labGauge.hidden = false;
     if (labKnob) labKnob.classList.remove('is-on');
     if (labVideo) {
       labVideo.classList.remove('is-on');
@@ -587,13 +602,13 @@
   function setLabOn() {
     labOn = true;
     if (labLight) labLight.hidden = false;
-    if (labGauge) labGauge.hidden = false;
+    if (labGauge) labGauge.hidden = true;
     if (labKnob) labKnob.classList.add('is-on');
+    if (labPort) labPort.classList.add('is-on');
     if (labVideo) {
       labVideo.classList.add('is-on');
-      if (!reducedMotion.matches) labVideo.play().catch(() => {});
+      playLabVideo();
     }
-    if (labPort) labPort.classList.add('is-on');
   }
 
   function enterLab() {
@@ -639,6 +654,7 @@
     running = true;
     if (ambient) ambient.play('street');
     requestAnimationFrame(loop);
+    if (new URLSearchParams(window.location.search).has('lab')) enterLab();
   }
 
   trigger.addEventListener('click', (event) => {
@@ -715,10 +731,16 @@
   }
 
   if (labVideo) {
+    labVideo.addEventListener('pause', () => {
+      if (!labOn || reducedMotion.matches) return;
+      if (document.visibilityState !== 'visible') return;
+      labVideo.play().catch(() => {});
+    });
     labVideo.addEventListener('click', (event) => {
       event.stopPropagation();
       if (!inLab || !labOn) return;
       if (window.SiteAccess && !window.SiteAccess.allows('gallery')) return;
+      if (ambient) ambient.silencePage();
       window.location.href = 'julian.html';
     });
   }

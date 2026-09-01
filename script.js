@@ -1,19 +1,35 @@
 // Open music player in compact popup window
+const ambient = window.CrisisAmbient;
 const openPlayerBtn = document.getElementById('open-player');
 
 if (openPlayerBtn) {
   openPlayerBtn.addEventListener('click', () => {
+    if (ambient) ambient.silencePage();
+
     const w = 1000;
     const h = 650;
     const left = Math.max(0, Math.round((screen.width - w) / 2));
     const top = Math.max(0, Math.round((screen.height - h) / 2));
     const features = `width=${w},height=${h},left=${left},top=${top},noopener,noreferrer`;
     const popup = window.open('player.html', 'what-crisis-player', features);
-    if (!popup) window.open('player.html', '_blank');
+    if (!popup) {
+      window.open('player.html', '_blank');
+      return;
+    }
+
+    const resumeHome = () => {
+      if (document.getElementById('crisis-game')?.classList.contains('is-open')) return;
+      startHomeAudio();
+    };
+
+    const timer = setInterval(() => {
+      if (popup.closed) {
+        clearInterval(timer);
+        resumeHome();
+      }
+    }, 400);
   });
 }
-
-const ambient = window.CrisisAmbient;
 
 function startHomeAudio() {
   if (!ambient) return;
@@ -22,10 +38,16 @@ function startHomeAudio() {
 }
 
 if (ambient) {
+  ambient.silencePage();
   ambient.play('home');
   const unlockHome = () => startHomeAudio();
   window.addEventListener('pointerdown', unlockHome, { once: true });
   window.addEventListener('keydown', unlockHome, { once: true });
+  window.addEventListener('pageshow', (event) => {
+    if (!event.persisted) return;
+    if (document.getElementById('crisis-game')?.classList.contains('is-open')) return;
+    startHomeAudio();
+  });
 }
 
 // Portal video — reduced motion + autoplay-blocked fallback only.

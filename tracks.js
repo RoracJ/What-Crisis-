@@ -130,6 +130,7 @@ function getArtworkUrl(id) {
 function openTrackArtwork(id) {
   const url = getArtworkUrl(id);
   if (window.opener && !window.opener.closed) {
+    if (window.opener.CrisisAmbient) window.opener.CrisisAmbient.silencePage();
     window.opener.location.href = url;
     window.opener.focus();
     return;

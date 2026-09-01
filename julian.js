@@ -1,4 +1,7 @@
 (() => {
+  const GALLERY_STOP_KEY = 'wc-ambient-stop';
+  const GALLERY_AUDIO_SRC = 'audio/git jules.mp3';
+
   const gallery = document.getElementById('julian-gallery');
   const portalsRoot = document.getElementById('gallery-portals');
   const stage = document.querySelector('.gallery-stage');
@@ -10,9 +13,32 @@
   const artId = params.get('art');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const debugEnabled = params.has('gallery-debug');
-  const ambient = window.CrisisAmbient;
+  const galleryAudio = new Audio(GALLERY_AUDIO_SRC);
+  galleryAudio.loop = true;
+  galleryAudio.preload = 'auto';
+  galleryAudio.setAttribute('data-gallery-music', '');
+  galleryAudio.hidden = true;
+  document.body.appendChild(galleryAudio);
+
   let portalFilms = [];
   let galleryActive = false;
+
+  function stopGalleryAudio() {
+    galleryAudio.pause();
+    galleryAudio.currentTime = 0;
+  }
+
+  function startGalleryAudio() {
+    galleryAudio.play().catch(() => {});
+  }
+
+  function signalOtherTabsStop() {
+    try {
+      localStorage.setItem(GALLERY_STOP_KEY, String(Date.now()));
+    } catch {
+      /* private mode */
+    }
+  }
 
   function pausePortalFilms() {
     portalFilms.forEach((film) => {
@@ -30,25 +56,26 @@
   }
 
   function unlockGalleryPlayback() {
-    if (ambient && galleryActive) ambient.play('gallery');
+    startGalleryAudio();
     playPortalFilms();
   }
 
   function stopGalleryScene() {
     galleryActive = false;
-    if (ambient) ambient.stop();
+    stopGalleryAudio();
     pausePortalFilms();
   }
 
   function startGalleryScene() {
     galleryActive = true;
-    if (ambient) ambient.play('gallery');
+    startGalleryAudio();
     playPortalFilms();
   }
 
   function goHome() {
     stopGalleryScene();
-    window.location.href = 'index.html';
+    signalOtherTabsStop();
+    window.location.replace('index.html');
   }
 
   artwork.addEventListener('click', goHome);
@@ -65,13 +92,14 @@
       goHome();
       return;
     }
-    stopGalleryScene();
+    pausePortalFilms();
     gallery.hidden = true;
     portalsRoot.replaceChildren();
     portalFilms = [];
     artwork.hidden = false;
     artImage.src = track.artwork;
     document.body.style.overflow = 'hidden';
+    startGalleryAudio();
   }
 
   function buildPortalFilm(track) {
@@ -200,14 +228,36 @@
     showGallery();
   });
 
-  window.addEventListener('pagehide', () => {
-    if (galleryActive) stopGalleryScene();
+  window.addEventListener('pagehide', stopGalleryScene);
+  window.addEventListener('unload', stopGalleryScene);
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      galleryAudio.pause();
+      pausePortalFilms();
+      return;
+    }
+    startGalleryAudio();
+    if (!gallery.hidden) playPortalFilms();
   });
 
-  if (ambient) {
-    window.addEventListener('pointerdown', unlockGalleryPlayback, { once: true });
-    window.addEventListener('keydown', unlockGalleryPlayback, { once: true });
-  }
+  window.addEventListener('storage', (event) => {
+    if (event.key === GALLERY_STOP_KEY) stopGalleryScene();
+  });
+
+  window.addEventListener('pageshow', (event) => {
+    startGalleryAudio();
+    if (!event.persisted) return;
+    const id = new URLSearchParams(window.location.search).get('art');
+    if (id) {
+      showArtwork(getTrackById(id));
+      return;
+    }
+    if (!gallery.hidden && !galleryActive) showGallery();
+  });
+
+  window.addEventListener('pointerdown', unlockGalleryPlayback, { once: true });
+  window.addEventListener('keydown', unlockGalleryPlayback, { once: true });
 
   if (artId) {
     if (window.SiteAccess && !window.SiteAccess.allows('artwork')) {

@@ -142,7 +142,7 @@ body.game-debug .game-trigger {
 }
 
 .lab-video {
-  display: none;
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -150,10 +150,10 @@ body.game-debug .game-trigger {
   cursor: pointer;
   transform: scale(var(--lab-video-scale));
   transform-origin: center center;
+  pointer-events: none;
 }
 
 .lab-video.is-on {
-  display: block;
   pointer-events: auto;
 }
 
