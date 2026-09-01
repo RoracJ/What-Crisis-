@@ -8,7 +8,7 @@
  *
  * Replace later, per track:
  *   portal   — Object / stone outline image
- *   artwork  — Julian emoji art shown full-bleed
+ *   artwork  — full Julian drawing shown on the black artwork page
  *
  * `video` is the player + gallery Object interior loop.
  */
@@ -20,7 +20,7 @@ const tracks = [
     audio: 'audio/track-one.mp3',
     video: 'video/track-one.mov',
     portal: 'assets/game/Object.png',
-    artwork: 'assets/game/Object.png'
+    artwork: 'assets/artwork/track-one.jpg'
   },
   {
     id: 'track-two',
@@ -28,7 +28,7 @@ const tracks = [
     audio: 'audio/track-two.mp3',
     video: 'video/track-two.mov',
     portal: 'assets/game/Object.png',
-    artwork: 'assets/game/Object.png'
+    artwork: 'assets/artwork/track-two.jpg'
   },
   {
     id: 'track-three',
@@ -36,7 +36,7 @@ const tracks = [
     audio: 'audio/track-three.mp3',
     video: 'video/track-three.mov',
     portal: 'assets/game/Object.png',
-    artwork: 'assets/game/Object.png'
+    artwork: 'assets/artwork/track-three.jpg'
   },
   {
     id: 'track-four',
@@ -44,7 +44,7 @@ const tracks = [
     audio: 'audio/track-four.mp3',
     video: 'video/track-four.mov',
     portal: 'assets/game/Object.png',
-    artwork: 'assets/game/Object.png'
+    artwork: 'assets/artwork/track-four.jpg'
   },
   {
     id: 'track-five',
@@ -52,7 +52,7 @@ const tracks = [
     audio: 'audio/track-five.mp3',
     video: 'video/track-five.mov',
     portal: 'assets/game/Object.png',
-    artwork: 'assets/game/Object.png'
+    artwork: 'assets/artwork/track-five.jpg'
   },
   {
     id: 'track-six',
@@ -60,7 +60,7 @@ const tracks = [
     audio: 'audio/track-six.mp3',
     video: 'video/track-six.mov',
     portal: 'assets/game/Object.png',
-    artwork: 'assets/game/Object.png'
+    artwork: 'assets/artwork/track-six.jpg'
   },
   {
     id: 'track-seven',
@@ -68,7 +68,7 @@ const tracks = [
     audio: 'audio/track-seven.mp3',
     video: 'video/track-seven.mov',
     portal: 'assets/game/Object.png',
-    artwork: 'assets/game/Object.png'
+    artwork: 'assets/artwork/track-seven.jpg'
   },
   {
     id: 'track-eight',
@@ -76,7 +76,7 @@ const tracks = [
     audio: 'audio/track-eight.mp3',
     video: 'video/track-eight.mov',
     portal: 'assets/game/Object.png',
-    artwork: 'assets/game/Object.png'
+    artwork: 'assets/artwork/track-eight.jpg'
   }
 ];
 

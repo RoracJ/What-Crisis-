@@ -1,0 +1,225 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: #050403;
+}
+
+.well-viewport {
+  position: relative;
+  height: 100dvh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #050403;
+}
+
+.well-stage {
+  position: relative;
+  aspect-ratio: var(--well-aspect-w) / var(--well-aspect-h);
+  width: min(100vw, calc(100dvh * var(--well-aspect-w) / var(--well-aspect-h)));
+  max-height: 100dvh;
+  transform-origin: var(--dad-x) var(--dad-y);
+  transform: translate(0, 0) scale(1);
+  transition: transform var(--well-zoom-ms) var(--well-zoom-ease);
+  will-change: transform;
+}
+
+.well-stage.is-zoomed {
+  transform: translate(calc(var(--zoom-anchor-x) - var(--dad-x)), calc(var(--zoom-anchor-y) - var(--dad-y))) scale(var(--well-zoom-scale));
+}
+
+.well-reveal {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: #050403;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--well-fade-ms) var(--well-zoom-ease);
+}
+
+.well-reveal.is-visible {
+  opacity: 1;
+}
+
+.well-reveal-image,
+.well-final-image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  user-select: none;
+  pointer-events: none;
+}
+
+.well-final {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #050403;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--well-final-ms) var(--well-zoom-ease);
+}
+
+.well-final.is-visible {
+  opacity: 1;
+}
+
+.well-final-stage {
+  position: relative;
+  width: max(100vw, calc(100dvh * var(--final-aspect-w) / var(--final-aspect-h)));
+  height: max(100dvh, calc(100vw * var(--final-aspect-h) / var(--final-aspect-w)));
+  transform-origin: var(--moon-x) var(--moon-y);
+  transform: translate(0, 0) scale(1);
+  transition: transform var(--well-moon-ms) var(--well-zoom-ease);
+  will-change: transform;
+}
+
+.well-final-stage.is-zoomed {
+  transform: translate(calc(var(--moon-anchor-x) - var(--moon-x)), calc(var(--moon-anchor-y) - var(--moon-y))) scale(var(--well-moon-scale));
+}
+
+.well-final-image {
+  object-fit: fill;
+}
+
+.well-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+}
+
+.well-stage.is-covered .well-photo {
+  opacity: 1;
+}
+
+.well-heads {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.well-head {
+  position: absolute;
+  width: var(--head-size);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+}
+
+.well-head-clip {
+  position: absolute;
+  inset: 2%;
+  border-radius: 50%;
+  overflow: hidden;
+  overflow: clip;
+  isolation: isolate;
+  clip-path: circle(50%);
+  background: #000;
+}
+
+.well-head-film-inner {
+  position: absolute;
+  left: var(--object-interior-x);
+  top: var(--object-interior-y);
+  width: var(--object-interior-size);
+  aspect-ratio: 1;
+  transform: translate3d(-50%, -50%, 0);
+  border-radius: 50%;
+  overflow: hidden;
+  overflow: clip;
+  isolation: isolate;
+  contain: paint;
+  clip-path: circle(50%);
+  -webkit-mask-image: radial-gradient(circle closest-side, #000 99.6%, transparent 100%);
+  mask-image: radial-gradient(circle closest-side, #000 99.6%, transparent 100%);
+  background: #000;
+  z-index: 0;
+}
+
+.well-film-source {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.well-head-film {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  border-radius: 50%;
+  clip-path: circle(50%);
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.well-head-shell {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+
+  -webkit-mask-image: radial-gradient(
+    calc(var(--object-interior-size) * 0.5)
+      calc(var(--object-interior-size) * 0.5)
+      at var(--object-interior-x) var(--object-interior-y),
+    transparent 99.6%,
+    #000 100%
+  );
+  mask-image: radial-gradient(
+    calc(var(--object-interior-size) * 0.5)
+      calc(var(--object-interior-size) * 0.5)
+      at var(--object-interior-x) var(--object-interior-y),
+    transparent 99.6%,
+    #000 100%
+  );
+}
+
+.well-head-film::-webkit-media-controls,
+.well-head-film::-webkit-media-controls-enclosure {
+  display: none !important;
+}
+
+.well-head.debug .well-head-clip {
+  outline: 2px solid rgba(232, 80, 54, 0.85);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .well-head-film {
+    display: none;
+  }
+}

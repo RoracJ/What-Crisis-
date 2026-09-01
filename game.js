@@ -30,6 +30,7 @@
   const canvas = document.getElementById('crisis-canvas');
   const promptEl = document.getElementById('crisis-prompt');
   const deathFlash = document.getElementById('crisis-death-flash');
+  const deathCards = document.getElementById('crisis-death-cards');
   const labVideo = document.getElementById('lab-video');
   const labPort = labVideo && labVideo.parentElement;
   const labLight = document.getElementById('lab-light');
@@ -192,6 +193,17 @@
     return { w, h };
   }
 
+  const DEATH_SLAM_MS = 90;
+  const DEATH_CARD_HOLD_MS = 5000;
+  const DEATH_CARD_FADE_MS = 380;
+
+  function clearDeathCards() {
+    if (!deathCards) return;
+    deathCards.classList.remove('is-slam', 'is-cross');
+    void deathCards.offsetWidth;
+    if (deathFlash) deathFlash.classList.remove('is-receded');
+  }
+
   function resetPlayer() {
     player = {
       x: PLAYER_START.x,
@@ -222,6 +234,7 @@
     debris = [];
     death = null;
     if (deathFlash) deathFlash.classList.remove('is-flash');
+    clearDeathCards();
 
     // Top → bottom: UFO, empty gap, cars, headless, cars, headless
     saucers = [
@@ -359,7 +372,11 @@
       x: (cx - view.ox) / view.dw,
       y: (cy - view.oy) / view.dh,
       h: rect.h / view.dh,
-      until: now + 500
+      slamAt: now + DEATH_SLAM_MS,
+      crossAt: now + DEATH_SLAM_MS + DEATH_CARD_HOLD_MS,
+      until: now + DEATH_SLAM_MS + DEATH_CARD_HOLD_MS + DEATH_CARD_FADE_MS,
+      slammed: false,
+      crossed: false
     };
     briefcase = { mode: 'idle', x: player.x, y: player.y, angle: 0 };
     if (deathFlash) {
@@ -367,6 +384,7 @@
       void deathFlash.offsetWidth;
       deathFlash.classList.add('is-flash');
     }
+    clearDeathCards();
   }
 
   function drawDeathFireball() {
@@ -377,6 +395,7 @@
   function finishDeath() {
     death = null;
     if (deathFlash) deathFlash.classList.remove('is-flash');
+    clearDeathCards();
     resetPlayer();
   }
 
@@ -384,6 +403,18 @@
     if (inLab) return;
 
     if (death) {
+      if (!death.slammed && now >= death.slamAt) {
+        death.slammed = true;
+        if (deathFlash) {
+          deathFlash.classList.remove('is-flash');
+          deathFlash.classList.add('is-receded');
+        }
+        if (deathCards) deathCards.classList.add('is-slam');
+      }
+      if (!death.crossed && now >= death.crossAt) {
+        death.crossed = true;
+        if (deathCards) deathCards.classList.add('is-cross');
+      }
       if (now >= death.until) finishDeath();
     } else {
       let mx = 0;
@@ -628,6 +659,7 @@
     root.setAttribute('aria-hidden', 'true');
     promptEl.classList.remove('is-on');
     if (deathFlash) deathFlash.classList.remove('is-flash');
+    clearDeathCards();
     death = null;
     setLabOff();
     keys.clear();

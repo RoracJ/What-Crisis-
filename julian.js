@@ -57,7 +57,7 @@
 
   function unlockGalleryPlayback() {
     startGalleryAudio();
-    playPortalFilms();
+    if (!gallery.hidden) playPortalFilms();
   }
 
   function stopGalleryScene() {
@@ -78,10 +78,17 @@
     window.location.replace('index.html');
   }
 
-  artwork.addEventListener('click', goHome);
+  function goWell() {
+    stopGalleryScene();
+    signalOtherTabsStop();
+    window.location.replace('well.html');
+  }
+
+  artwork.addEventListener('click', goWell);
 
   function openGalleryArtwork(track) {
     if (!track) return;
+    startGalleryAudio();
     showArtwork(track);
     const url = getArtworkUrl(track.id);
     window.history.pushState({ art: track.id }, '', url);
@@ -93,13 +100,13 @@
       return;
     }
     pausePortalFilms();
+    startGalleryAudio();
     gallery.hidden = true;
     portalsRoot.replaceChildren();
     portalFilms = [];
     artwork.hidden = false;
     artImage.src = track.artwork;
     document.body.style.overflow = 'hidden';
-    startGalleryAudio();
   }
 
   function buildPortalFilm(track) {
@@ -237,8 +244,11 @@
       pausePortalFilms();
       return;
     }
-    startGalleryAudio();
-    if (!gallery.hidden) playPortalFilms();
+    if (!gallery.hidden) {
+      startGalleryScene();
+      return;
+    }
+    if (!artwork.hidden) startGalleryAudio();
   });
 
   window.addEventListener('storage', (event) => {
@@ -246,7 +256,6 @@
   });
 
   window.addEventListener('pageshow', (event) => {
-    startGalleryAudio();
     if (!event.persisted) return;
     const id = new URLSearchParams(window.location.search).get('art');
     if (id) {

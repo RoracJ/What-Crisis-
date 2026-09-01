@@ -1,0 +1,46 @@
+/*
+ * ═══════════════════════════════════════════════════════════
+ *  WELL PAGE — photo aspect + Object interior window
+ * ═══════════════════════════════════════════════════════════
+ *
+ * Head left/top/size live in well.js (HEADS array).
+ * Interior window matches gallery/player Object punch.
+ * Zoom target is Julian's dad (bottom row, second from right).
+ * Debug: add ?well-debug to the URL.
+ */
+
+.well-stage {
+  --well-aspect-w: 2632;
+  --well-aspect-h: 2178;
+
+  --object-interior-x: 50%;
+  --object-interior-y: 56%;
+  --object-interior-size: 76%;
+}
+
+.well-viewport {
+  /* Julian's dad eyes (% of the photograph) land at --zoom-anchor */
+  --dad-x: 67.2%;
+  --dad-y: 43.4%;
+  --zoom-anchor-x: 50%;
+  --zoom-anchor-y: 43%;
+  --well-zoom-scale: 13;
+
+  --well-hold-ms: 30000ms;
+  --well-zoom-ms: 11000ms;
+  --well-fade-delay-ms: 39000ms;
+  --well-fade-ms: 7800ms;
+  --well-mask-hold-ms: 1750ms;
+  --well-final-ms: 7500ms;
+  --well-moon-ms: 22000ms;
+  --well-zoom-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --final-aspect-w: 1258;
+  --final-aspect-h: 950;
+  --moon-x: 17.8%;
+  --moon-y: 21.9%;
+  --moon-anchor-x: 50%;
+  --moon-anchor-y: 50%;
+  --moon-diam: 5.4%;
+  --well-moon-scale: 20;
+}

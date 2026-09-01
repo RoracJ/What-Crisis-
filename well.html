@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What Crisis?</title>
+  <link rel="stylesheet" href="well-config.css">
+  <link rel="stylesheet" href="well.css">
+</head>
+<body>
+  <div class="well-viewport" id="well-viewport">
+    <div class="well-stage" id="well-stage">
+      <img
+        class="well-photo"
+        src="assets/Jules Dad.jpg"
+        alt=""
+        width="2632"
+        height="2178"
+        decoding="async"
+        draggable="false"
+      />
+      <div class="well-heads" id="well-heads"></div>
+    </div>
+    <div class="well-reveal" id="well-reveal">
+      <img
+        class="well-reveal-image"
+        src="assets/well-reveal.jpg"
+        alt=""
+        width="2339"
+        height="3035"
+        decoding="async"
+        draggable="false"
+      />
+    </div>
+    <div class="well-final" id="well-final">
+      <div class="well-final-stage" id="well-final-stage">
+        <img
+          class="well-final-image"
+          src="assets/well-final.jpg"
+          alt=""
+          width="1258"
+          height="950"
+          decoding="async"
+          draggable="false"
+        />
+      </div>
+    </div>
+  </div>
+
+  <video
+    id="well-film-source"
+    class="well-film-source"
+    muted
+    loop
+    playsinline
+    webkit-playsinline
+    autoplay
+    preload="auto"
+    disablepictureinpicture
+    src="videos/portal.mov"
+    aria-hidden="true"
+  ></video>
+
+  <script src="site-access.js"></script>
+  <script src="well.js"></script>
+</body>
+</html>
