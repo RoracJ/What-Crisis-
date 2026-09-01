@@ -1,0 +1,113 @@
+/*
+ * ═══════════════════════════════════════════════════════════
+ *  GALLERY OBJECT ALIGNMENT — edit only this file to tune
+ * ═══════════════════════════════════════════════════════════
+ *
+ * Portal centers on Gallery.png (1254 × 1254), translate -50%, -50%.
+ * Positions scaled inward from tip coords via --portal-radial-scale.
+ * Debug: add ?gallery-debug to the URL.
+ */
+
+.gallery-stage {
+  /* Source artwork (square) */
+  --gallery-aspect-w: 1254;
+  --gallery-aspect-h: 1254;
+
+  /* Object hit-box diameter (% of image width) */
+  --portal-size: 18.9%;
+
+  /* Final circular clip — shaves outer edge artifacts only */
+  --portal-clip-size: 96%;
+
+  /* Object interior window — same proportions as player-config.css */
+  --object-interior-x: 50%;
+  --object-interior-y: 56%;
+  --object-interior-size: 76%;
+
+  /* Station hub origin for radial inward scaling */
+  --station-cx: 50.45%;
+  --station-cy: 48.84%;
+  --portal-radial-scale: 0.83;
+
+  /* Center hub logo — unchanged */
+  --logo-x: 50.45%;
+  --logo-y: 48.84%;
+  --logo-size: 15%;
+
+  /*
+   * Portal centers after radial scale:
+   * new = center + (tip - center) * --portal-radial-scale
+   */
+
+  /* 12 o'clock */
+  --portal-top-x: 50.08%;
+  --portal-top-y: 9.63%;
+
+  /* 1:30 / upper-right */
+  --portal-upper-right-x: 80.21%;
+  --portal-upper-right-y: 19.67%;
+
+  /* 3 o'clock */
+  --portal-right-x: 86.51%;
+  --portal-right-y: 49.8%;
+
+  /* 4:30 / lower-right */
+  --portal-lower-right-x: 78.21%;
+  --portal-lower-right-y: 77.94%;
+
+  /* 6 o'clock */
+  --portal-bottom-x: 50.08%;
+  --portal-bottom-y: 89.14%;
+
+  /* 7:30 / lower-left */
+  --portal-lower-left-x: 20.53%;
+  --portal-lower-left-y: 79.43%;
+
+  /* 9 o'clock */
+  --portal-left-x: 13.31%;
+  --portal-left-y: 49.8%;
+
+  /* 10:30 / upper-left */
+  --portal-upper-left-x: 21.28%;
+  --portal-upper-left-y: 21%;
+}
+
+.gallery-portal[data-arm="top"] {
+  left: var(--portal-top-x);
+  top: var(--portal-top-y);
+}
+
+.gallery-portal[data-arm="upper-right"] {
+  left: var(--portal-upper-right-x);
+  top: var(--portal-upper-right-y);
+}
+
+.gallery-portal[data-arm="right"] {
+  left: var(--portal-right-x);
+  top: var(--portal-right-y);
+}
+
+.gallery-portal[data-arm="lower-right"] {
+  left: var(--portal-lower-right-x);
+  top: var(--portal-lower-right-y);
+}
+
+.gallery-portal[data-arm="bottom"] {
+  left: var(--portal-bottom-x);
+  top: var(--portal-bottom-y);
+}
+
+.gallery-portal[data-arm="lower-left"] {
+  left: var(--portal-lower-left-x);
+  top: var(--portal-lower-left-y);
+}
+
+.gallery-portal[data-arm="left"] {
+  left: var(--portal-left-x);
+  top: var(--portal-left-y);
+}
+
+.gallery-portal[data-arm="upper-left"] {
+  left: var(--portal-upper-left-x);
+  top: var(--portal-upper-left-y);
+}

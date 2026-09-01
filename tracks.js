@@ -8,11 +8,9 @@
  *
  * Replace later, per track:
  *   portal   — Object / stone outline image
- *   interior — muted looping film inside that Object
  *   artwork  — Julian emoji art shown full-bleed
  *
- * `video` is the player Object interior. Gallery uses `interior`
- * (falls back to `video`, then videos/portal.mov).
+ * `video` is the player + gallery Object interior loop.
  */
 
 const tracks = [
@@ -22,7 +20,6 @@ const tracks = [
     audio: 'audio/track-one.mp3',
     video: 'video/track-one.mov',
     portal: 'assets/game/Object.png',
-    interior: 'videos/portal.mov',
     artwork: 'assets/game/Object.png'
   },
   {
@@ -31,7 +28,6 @@ const tracks = [
     audio: 'audio/track-two.mp3',
     video: 'video/track-two.mov',
     portal: 'assets/game/Object.png',
-    interior: 'videos/portal.mov',
     artwork: 'assets/game/Object.png'
   },
   {
@@ -40,7 +36,6 @@ const tracks = [
     audio: 'audio/track-three.mp3',
     video: 'video/track-three.mov',
     portal: 'assets/game/Object.png',
-    interior: 'videos/portal.mov',
     artwork: 'assets/game/Object.png'
   },
   {
@@ -49,7 +44,6 @@ const tracks = [
     audio: 'audio/track-four.mp3',
     video: 'video/track-four.mov',
     portal: 'assets/game/Object.png',
-    interior: 'videos/portal.mov',
     artwork: 'assets/game/Object.png'
   },
   {
@@ -58,7 +52,6 @@ const tracks = [
     audio: 'audio/track-five.mp3',
     video: 'video/track-five.mov',
     portal: 'assets/game/Object.png',
-    interior: 'videos/portal.mov',
     artwork: 'assets/game/Object.png'
   },
   {
@@ -67,7 +60,6 @@ const tracks = [
     audio: 'audio/track-six.mp3',
     video: 'video/track-six.mov',
     portal: 'assets/game/Object.png',
-    interior: 'videos/portal.mov',
     artwork: 'assets/game/Object.png'
   },
   {
@@ -76,7 +68,6 @@ const tracks = [
     audio: 'audio/track-seven.mp3',
     video: 'video/track-seven.mov',
     portal: 'assets/game/Object.png',
-    interior: 'videos/portal.mov',
     artwork: 'assets/game/Object.png'
   },
   {
@@ -85,9 +76,19 @@ const tracks = [
     audio: 'audio/track-eight.mp3',
     video: 'video/track-eight.mov',
     portal: 'assets/game/Object.png',
-    interior: 'videos/portal.mov',
     artwork: 'assets/game/Object.png'
   }
+];
+
+const GALLERY_ARMS = [
+  { name: 'top', degrees: 0 },
+  { name: 'upper-right', degrees: 45 },
+  { name: 'right', degrees: 90 },
+  { name: 'lower-right', degrees: 135 },
+  { name: 'bottom', degrees: 180 },
+  { name: 'lower-left', degrees: 225 },
+  { name: 'left', degrees: 270 },
+  { name: 'upper-left', degrees: 315 }
 ];
 
 function getTrackById(id) {
@@ -95,7 +96,31 @@ function getTrackById(id) {
 }
 
 function getTrackInterior(track) {
-  return (track && (track.interior || track.video)) || 'videos/portal.mov';
+  return (track && (track.video || track.interior)) || 'videos/portal.mov';
+}
+
+/** Shared player + gallery interior video setup (muted loop, no controls). */
+function configureTrackInteriorVideo(video, track) {
+  if (!video || !track) return video;
+  video.muted = true;
+  video.setAttribute('muted', '');
+  video.loop = true;
+  video.playsInline = true;
+  video.setAttribute('playsinline', '');
+  video.setAttribute('webkit-playsinline', '');
+  video.autoplay = true;
+  video.preload = 'auto';
+  video.controls = false;
+  video.disablePictureInPicture = true;
+  video.setAttribute('disablepictureinpicture', '');
+  video.src = getTrackInterior(track);
+  return video;
+}
+
+function createTrackInteriorVideo(track) {
+  const video = document.createElement('video');
+  configureTrackInteriorVideo(video, track);
+  return video;
 }
 
 function getArtworkUrl(id) {
@@ -110,4 +135,16 @@ function openTrackArtwork(id) {
     return;
   }
   window.location.href = url;
+}
+
+function getGalleryArmPosition(stage, armDegrees) {
+  const styles = getComputedStyle(stage);
+  const cx = parseFloat(styles.getPropertyValue('--station-cx')) || 50;
+  const cy = parseFloat(styles.getPropertyValue('--station-cy')) || 50;
+  const radius = parseFloat(styles.getPropertyValue('--portal-radius')) || 41.5;
+  const rad = (armDegrees * Math.PI) / 180;
+  return {
+    x: cx + radius * Math.sin(rad),
+    y: cy - radius * Math.cos(rad)
+  };
 }

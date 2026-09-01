@@ -3,7 +3,8 @@ window.CrisisAmbient = (() => {
     home: 'audio/homer.mp3',
     street: 'audio/Game.mp3',
     labOff: 'audio/Lab1.mp3',
-    labOn: 'audio/Lab 2.mp3'
+    labOn: 'audio/Lab 2.mp3',
+    gallery: 'audio/git jules.mp3'
   };
 
   const players = {};

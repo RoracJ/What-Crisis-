@@ -4,14 +4,38 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>What Crisis?</title>
+  <link rel="stylesheet" href="gallery-config.css">
   <link rel="stylesheet" href="julian.css">
 </head>
 <body>
-  <div id="julian-gallery" class="julian-gallery" hidden></div>
+  <div id="julian-gallery" class="gallery-viewport" hidden>
+    <div class="gallery-stage">
+      <img
+        class="gallery-background"
+        src="assets/Gallery.png"
+        alt=""
+        width="1254"
+        height="1254"
+        decoding="async"
+      />
+
+      <img
+        class="gallery-logo"
+        src="assets/game/Logo.png"
+        alt=""
+        draggable="false"
+      />
+
+      <div class="gallery-portals" id="gallery-portals" aria-label="Object terminals"></div>
+    </div>
+  </div>
+
   <div id="julian-artwork" class="julian-artwork" hidden>
     <img id="julian-art-image" alt="">
   </div>
+
   <script src="site-access.js"></script>
+  <script src="ambient.js"></script>
   <script src="tracks.js"></script>
   <script src="julian.js"></script>
 </body>

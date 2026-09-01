@@ -33,9 +33,9 @@
     btnPlay.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
   }
 
-  function loadVideo(src) {
+  function loadVideo(track) {
     video.pause();
-    video.src = src;
+    configureTrackInteriorVideo(video, track);
     video.load();
     video.currentTime = 0;
     return video.play().catch(() => {});
@@ -53,7 +53,7 @@
     audio.load();
     audio.currentTime = 0;
 
-    loadVideo(track.video);
+    loadVideo(track);
 
     currentIndex = i;
     updateActiveTrack();
