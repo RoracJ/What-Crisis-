@@ -621,6 +621,7 @@
   }
 
   function openGame() {
+    if (window.SiteAccess && !window.SiteAccess.allows('game')) return;
     if (open) return;
     if (!assetsReady) return;
     open = true;
@@ -717,6 +718,7 @@
     labVideo.addEventListener('click', (event) => {
       event.stopPropagation();
       if (!inLab || !labOn) return;
+      if (window.SiteAccess && !window.SiteAccess.allows('gallery')) return;
       window.location.href = 'julian.html';
     });
   }

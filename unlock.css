@@ -1,0 +1,29 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  background: #000;
+}
+
+.unlock-form {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+}
+
+.unlock-form input {
+  width: min(16rem, 70vw);
+  border: none;
+  border-bottom: 1px solid #333;
+  background: transparent;
+  color: #c8c2b4;
+  font-family: Georgia, serif;
+  font-size: 1rem;
+  letter-spacing: 0.16em;
+  text-align: center;
+  outline: none;
+}

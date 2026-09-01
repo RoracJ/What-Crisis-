@@ -73,7 +73,8 @@ body {
   transform: translate(-50%, -50%);
   border-radius: 50%;
   overflow: hidden;
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: pointer;
   z-index: 1;
 }
 

@@ -201,7 +201,7 @@ body.game-debug .game-trigger {
   width: var(--lab-logo-w);
   height: var(--lab-logo-h);
   transform: translate(-50%, -50%);
-  filter: url(#lab-logo-grit) brightness(1.88) contrast(1.1);
+  filter: brightness(0.55);
   -webkit-mask-image: radial-gradient(circle closest-side, #000 78%, transparent 80%);
   mask-image: radial-gradient(circle closest-side, #000 78%, transparent 80%);
 }
