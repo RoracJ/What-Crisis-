@@ -30,6 +30,7 @@
   const root = document.getElementById('well-heads');
   const viewport = document.getElementById('well-viewport');
   const stage = document.getElementById('well-stage');
+  const dad = document.getElementById('well-dad');
   const reveal = document.getElementById('well-reveal');
   const finale = document.getElementById('well-final');
   const finaleStage = document.getElementById('well-final-stage');
@@ -47,6 +48,7 @@
   let pageVisible = document.visibilityState === 'visible';
   let filmsAllowed = true;
   let sequenceDone = false;
+  let cinematicStarted = false;
   let paintFrame = 0;
 
   const labOnAudio = new Audio(LAB_ON_SRC);
@@ -253,6 +255,41 @@
     snapClass(reveal, 'is-visible', false);
     snapClass(finale, 'is-visible', false);
     snapClass(finaleStage, 'is-zoomed', false);
+    if (dad) dad.classList.remove('is-spent');
+  }
+
+  function beginCinematic() {
+    if (cinematicStarted) return;
+    cinematicStarted = true;
+    cancelSequence();
+    if (dad) dad.classList.add('is-spent');
+
+    const fadeAfterZoomMs = readMs('--well-fade-after-zoom-ms', 9000);
+    const fadeMs = readMs('--well-fade-ms', 7800);
+    const maskHoldMs = readMs('--well-mask-hold-ms', 1750);
+    const finalMs = readMs('--well-final-ms', 7500);
+    const moonHoldMs = readMs('--well-moon-hold-ms', 2000);
+    const homeMs = readMs('--well-home-ms', 16000);
+    const finaleAt = fadeAfterZoomMs + fadeMs + maskHoldMs;
+    const moonAt = finaleAt + finalMs + moonHoldMs;
+
+    stage.classList.add('is-zoomed');
+
+    later(() => {
+      reveal.classList.add('is-visible');
+    }, fadeAfterZoomMs);
+
+    later(() => {
+      finale.classList.add('is-visible');
+      filmsAllowed = false;
+      pauseFilms();
+      stage.style.willChange = 'auto';
+    }, finaleAt);
+
+    later(() => {
+      finishSequence();
+      later(goHome, homeMs);
+    }, moonAt);
   }
 
   function goHome() {
@@ -262,31 +299,13 @@
 
   function startSequence() {
     cancelSequence();
+    cinematicStarted = false;
     sequenceDone = false;
     filmsAllowed = true;
     resetSequenceVisuals();
 
-    const holdMs = readMs('--well-hold-ms', 30000);
-    const fadeDelayMs = readMs('--well-fade-delay-ms', 39000);
-    const fadeMs = readMs('--well-fade-ms', 7800);
-    const maskHoldMs = readMs('--well-mask-hold-ms', 1750);
-    const finalMs = readMs('--well-final-ms', 2500);
-    const moonMs = readMs('--well-moon-ms', 22000);
-    const finalDelayMs = fadeDelayMs + fadeMs + maskHoldMs;
-
-    later(() => {
-      stage.classList.add('is-zoomed');
-    }, holdMs);
-
-    later(() => {
-      reveal.classList.add('is-visible');
-    }, fadeDelayMs);
-
-    later(() => {
-      finale.classList.add('is-visible');
-      finishSequence();
-      later(goHome, moonMs);
-    }, finalDelayMs);
+    const holdMs = readMs('--well-hold-ms', 5000);
+    later(beginCinematic, holdMs);
   }
 
   function exitPage() {
@@ -313,6 +332,15 @@
   });
   window.addEventListener('pointerdown', startScene);
   window.addEventListener('keydown', startScene);
+
+  if (dad) {
+    if (debugEnabled) dad.classList.add('debug');
+    dad.addEventListener('click', (event) => {
+      event.preventDefault();
+      startScene();
+      beginCinematic();
+    });
+  }
 
   signalOtherTabs();
   startSequence();

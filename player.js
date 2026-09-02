@@ -1,6 +1,7 @@
 (function () {
   const audio = new Audio();
   const video = document.getElementById('player-video');
+  const artLink = document.getElementById('player-art-link');
   const trackListEl = document.getElementById('track-list');
   const btnPlay = document.getElementById('btn-play');
   const btnPrev = document.getElementById('btn-prev');
@@ -57,6 +58,7 @@
 
     currentIndex = i;
     updateActiveTrack();
+    syncArtLink();
 
     if (autoplay) {
       audio.play()
@@ -118,22 +120,35 @@
   btnNext.addEventListener('click', nextTrack);
   btnPrev.addEventListener('click', prevTrack);
 
-  const videoInner = document.querySelector('.player-video-inner');
-  if (videoInner) {
-    videoInner.addEventListener('click', (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      if (currentIndex < 0 || typeof tracks === 'undefined') return;
-      if (window.SiteAccess && !window.SiteAccess.allows('artwork')) return;
-      const track = tracks[currentIndex];
-      if (!track) return;
+  function syncArtLink() {
+    if (!artLink || typeof tracks === 'undefined') return;
+    const track = currentIndex >= 0 ? tracks[currentIndex] : tracks[0];
+    const locked = window.SiteAccess && !window.SiteAccess.allows('artwork');
+    if (!track || locked) {
+      artLink.removeAttribute('href');
+      artLink.setAttribute('aria-disabled', 'true');
+      artLink.setAttribute('aria-label', 'Artwork locked');
+      return;
+    }
+    artLink.href = getArtworkUrl(track.id);
+    artLink.removeAttribute('aria-disabled');
+    artLink.setAttribute('aria-label', `Open ${track.title} in the art gallery`);
+  }
+
+  if (artLink) {
+    artLink.addEventListener('click', (event) => {
+      if (!artLink.getAttribute('href')) {
+        event.preventDefault();
+        return;
+      }
       audio.pause();
       video.pause();
       isPlaying = false;
       updatePlayButton();
-      openTrackArtwork(track.id);
     });
   }
+
+  syncArtLink();
 
   audio.addEventListener('ended', nextTrack);
 

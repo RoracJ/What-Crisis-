@@ -83,7 +83,9 @@ body {
   mask-image: radial-gradient(circle closest-side, #000 99.6%, transparent 100%);
   pointer-events: auto;
   cursor: pointer;
-  z-index: 1;
+  z-index: 5;
+  color: inherit;
+  text-decoration: none;
 }
 
 .player-video {
@@ -98,6 +100,7 @@ body {
   border-radius: 50%;
   clip-path: circle(50%);
   background: transparent;
+  pointer-events: none;
   -webkit-appearance: none;
   appearance: none;
 }

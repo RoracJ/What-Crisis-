@@ -116,7 +116,7 @@ body.game-debug .game-trigger {
 
 .crisis-death-cards.is-cross .crisis-death-card-b {
   opacity: 1;
-  transition: opacity 0.38s linear;
+  transition: opacity 0.3s linear;
 }
 
 .crisis-game.is-lab .crisis-canvas,

@@ -26,13 +26,15 @@
   --zoom-anchor-y: 43%;
   --well-zoom-scale: 13;
 
-  --well-hold-ms: 30000ms;
+  --well-hold-ms: 5000ms;
   --well-zoom-ms: 11000ms;
-  --well-fade-delay-ms: 39000ms;
+  --well-fade-after-zoom-ms: 9000ms;
   --well-fade-ms: 7800ms;
   --well-mask-hold-ms: 1750ms;
   --well-final-ms: 7500ms;
+  --well-moon-hold-ms: 2000ms;
   --well-moon-ms: 22000ms;
+  --well-home-ms: 16000ms;
   --well-zoom-ease: cubic-bezier(0.4, 0, 0.2, 1);
 
   --final-aspect-w: 1258;

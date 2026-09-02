@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="player-config.css">
-  <link rel="stylesheet" href="player.css">
+  <link rel="stylesheet" href="player.css?v=2">
 </head>
 <body>
   <div class="player-window">
@@ -22,7 +22,7 @@
         decoding="async"
       />
 
-      <div class="player-video-inner" aria-hidden="true">
+      <a class="player-video-inner" id="player-art-link" href="julian.html">
         <video
           id="player-video"
           class="player-video"
@@ -32,7 +32,7 @@
           playsinline
           preload="auto"
         ></video>
-      </div>
+      </a>
 
       <div class="player-ui">
         <h1 class="player-title">
@@ -58,6 +58,6 @@
 
   <script src="site-access.js"></script>
   <script src="tracks.js"></script>
-  <script src="player.js"></script>
+  <script src="player.js?v=2"></script>
 </body>
 </html>

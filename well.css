@@ -122,6 +122,28 @@ html, body {
   pointer-events: none;
 }
 
+.well-dad {
+  position: absolute;
+  left: var(--dad-x);
+  top: var(--dad-y);
+  width: 11%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.well-dad.is-spent {
+  pointer-events: none;
+  cursor: default;
+}
+
 .well-head {
   position: absolute;
   width: var(--head-size);
@@ -215,6 +237,10 @@ html, body {
 }
 
 .well-head.debug .well-head-clip {
+  outline: 2px solid rgba(232, 80, 54, 0.85);
+}
+
+.well-dad.debug {
   outline: 2px solid rgba(232, 80, 54, 0.85);
 }
 

@@ -193,9 +193,10 @@
     return { w, h };
   }
 
+  const DEATH_STAY_MS = 1500;
   const DEATH_SLAM_MS = 90;
-  const DEATH_CARD_HOLD_MS = 5000;
-  const DEATH_CARD_FADE_MS = 380;
+  const DEATH_CARD_FADE_MS = 300;
+  const DEATH_CARD_HOLD_MS = DEATH_STAY_MS - DEATH_SLAM_MS - DEATH_CARD_FADE_MS;
 
   function clearDeathCards() {
     if (!deathCards) return;
@@ -373,8 +374,8 @@
       y: (cy - view.oy) / view.dh,
       h: rect.h / view.dh,
       slamAt: now + DEATH_SLAM_MS,
-      crossAt: now + DEATH_SLAM_MS + DEATH_CARD_HOLD_MS,
-      until: now + DEATH_SLAM_MS + DEATH_CARD_HOLD_MS + DEATH_CARD_FADE_MS,
+      crossAt: now + DEATH_STAY_MS - DEATH_CARD_FADE_MS,
+      until: now + DEATH_STAY_MS,
       slammed: false,
       crossed: false
     };
