@@ -1,7 +1,10 @@
 // Open music player in compact popup window (desktop) or in-page overlay
 // (coarse pointer / popup-blocked). Same player.html in both cases.
 const ambient = window.CrisisAmbient;
+const access = window.SiteAccess;
 const openPlayerBtn = document.getElementById('open-player');
+const homeUnlock = document.getElementById('home-unlock');
+const homeUnlockCode = document.getElementById('home-unlock-code');
 const playerShell = document.getElementById('home-player-shell');
 const playerFrame = document.getElementById('home-player-frame');
 const portalVideo = document.querySelector('.portal-video');
@@ -130,6 +133,22 @@ if (ambient) {
     startHomeAudio();
     resumeHomePortalSoon();
   });
+}
+
+if (homeUnlock && homeUnlockCode && access) {
+  if (access.configuredMode() !== 'PRERELEASE') {
+    homeUnlock.hidden = true;
+  } else {
+    homeUnlock.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const result = await access.submitCode(homeUnlockCode.value);
+      if (result && result.ok) {
+        window.location.reload();
+        return;
+      }
+      homeUnlockCode.value = '';
+    });
+  }
 }
 
 window.addEventListener('pointerdown', () => resumeHomePortal());

@@ -57,8 +57,21 @@ window.SiteAccess = (() => {
     return Number(index) === 0;
   }
 
-  let verifier = async function verifyAccessCode() {
-    return { ok: false };
+  const UNLOCK_HASH = 'c4ec6eceba5cbb8a0fcb87814000c76014735d15272644c01286704fc70ca2e5';
+
+  function normalizeCode(code) {
+    return String(code || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  }
+
+  async function hashCode(code) {
+    const data = new TextEncoder().encode(normalizeCode(code));
+    const buf = await crypto.subtle.digest('SHA-256', data);
+    return [...new Uint8Array(buf)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+  }
+
+  let verifier = async function verifyAccessCode(code) {
+    const hash = await hashCode(code);
+    return { ok: hash === UNLOCK_HASH };
   };
 
   function setVerifier(fn) {
