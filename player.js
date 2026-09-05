@@ -1,5 +1,8 @@
 (function () {
-  const audio = new Audio();
+  const PLAYER_AUDIO_SRC = 'audio/git jules.mp3';
+  const audio = new Audio(PLAYER_AUDIO_SRC);
+  audio.loop = true;
+  audio.preload = 'auto';
   const video = document.getElementById('player-video');
   const artLink = document.getElementById('player-art-link');
   const trackListEl = document.getElementById('track-list');
@@ -34,10 +37,19 @@
     btnPlay.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
   }
 
+  function muteInterior() {
+    video.muted = true;
+    video.defaultMuted = true;
+    video.setAttribute('muted', '');
+    video.volume = 0;
+  }
+
   function loadVideo(track) {
     video.pause();
     configureTrackInteriorVideo(video, track);
+    muteInterior();
     video.load();
+    muteInterior();
     video.currentTime = 0;
     return video.play().catch(() => {});
   }
@@ -48,11 +60,6 @@
     const i = ((index % tracks.length) + tracks.length) % tracks.length;
     if (window.SiteAccess && !window.SiteAccess.canPlayTrack(i)) return;
     const track = tracks[i];
-
-    audio.pause();
-    audio.src = track.audio;
-    audio.load();
-    audio.currentTime = 0;
 
     loadVideo(track);
 
@@ -103,9 +110,11 @@
     loadTrack(currentIndex - 1, true);
   }
 
+  if (window.CrisisAmbient) window.CrisisAmbient.silencePage();
+
   renderTrackList();
 
-  // Auto-load first track — video plays immediately; audio starts if allowed
+  // Auto-load first track — muted interior; assigned audio file only
   if (tracks.length) {
     loadTrack(0, true);
   }
@@ -136,6 +145,9 @@
   }
 
   if (artLink) {
+    if (window.parent !== window) {
+      artLink.setAttribute('target', '_parent');
+    }
     artLink.addEventListener('click', (event) => {
       if (!artLink.getAttribute('href')) {
         event.preventDefault();
@@ -148,11 +160,35 @@
     });
   }
 
+  const homeLink = document.querySelector('.nav-link[href="index.html"]');
+  if (homeLink && window.parent !== window) {
+    homeLink.addEventListener('click', (event) => {
+      event.preventDefault();
+      audio.pause();
+      video.pause();
+      isPlaying = false;
+      window.parent.postMessage({ type: 'wc-player-close' }, window.location.origin);
+    });
+  }
+
   syncArtLink();
 
-  audio.addEventListener('ended', nextTrack);
+  audio.addEventListener('error', () => {
+    muteInterior();
+    isPlaying = false;
+    updatePlayButton();
+  });
+
+  window.addEventListener('pagehide', () => {
+    audio.pause();
+    muteInterior();
+  });
+
+  video.addEventListener('play', muteInterior);
+  video.addEventListener('volumechange', muteInterior);
 
   audio.addEventListener('play', () => {
+    muteInterior();
     isPlaying = true;
     updatePlayButton();
   });

@@ -16,9 +16,9 @@
   --hero-aspect-h: 1024;
 
   /* Inner dark circle — center position (% of artwork width/height) */
-  --portal-inner-x: 55.5%;
-  --portal-inner-y: 69.5%;
+  --portal-inner-x: 55.85%;
+  --portal-inner-y: 69.96%;
 
   /* Inner dark circle — diameter (% of artwork width) */
-  --portal-inner-size: 11.2%;
+  --portal-inner-size: 13.2%;
 }

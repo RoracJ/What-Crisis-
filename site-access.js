@@ -3,8 +3,8 @@
  *  SITE ACCESS — change MODE here when the site is ready
  * ═══════════════════════════════════════════════════════════
  *
- * FULL        develop/test everything (current default)
- * PRERELEASE  homepage + player; Track 1 only; hidden layers dark
+ * FULL        develop/test everything
+ * PRERELEASE  homepage + player; Track 1 only; hidden layers dark (live)
  * UNLOCKED    full site for every visitor (no code required)
  *
  * In PRERELEASE, a visitor who already unlocked on this browser
@@ -13,7 +13,7 @@
  */
 
 window.SiteAccess = (() => {
-  const MODE = 'FULL';
+  const MODE = 'PRERELEASE';
   const STORAGE_KEY = 'wc-site-access';
 
   function configuredMode() {

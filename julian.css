@@ -53,7 +53,9 @@ body {
   left: var(--logo-x);
   top: var(--logo-y);
   width: var(--logo-size);
-  height: auto;
+  height: var(--logo-size);
+  object-fit: contain;
+  object-position: center;
   transform: translate(-50%, -50%);
   pointer-events: none;
   user-select: none;
@@ -167,21 +169,46 @@ body {
 
 /* ── Full-bleed Julian artwork ── */
 .julian-artwork {
+  box-sizing: border-box;
+  width: 100%;
   min-height: 100dvh;
+  height: 100dvh;
+  overflow: hidden;
   display: grid;
   place-items: center;
   background: #000;
   cursor: pointer;
+  padding:
+    env(safe-area-inset-top, 0px)
+    env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px)
+    env(safe-area-inset-left, 0px);
 }
 
 .julian-artwork img {
-  max-width: min(92vw, 1400px);
-  max-height: 92dvh;
+  display: block;
+  max-width: min(
+    92vw,
+    1400px,
+    calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px))
+  );
+  max-height: min(
+    92dvh,
+    calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))
+  );
   width: auto;
   height: auto;
   object-fit: contain;
+  object-position: center;
   pointer-events: none;
   user-select: none;
+  -webkit-user-drag: none;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .julian-artwork img {
+    pointer-events: auto;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

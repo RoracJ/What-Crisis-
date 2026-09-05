@@ -19,19 +19,19 @@
   /* Final circular clip — shaves outer edge artifacts only */
   --portal-clip-size: 96%;
 
-  /* Object interior window — same proportions as player-config.css */
+  /* Object interior window — centered in the Object ring */
   --object-interior-x: 50%;
-  --object-interior-y: 56%;
-  --object-interior-size: 76%;
+  --object-interior-y: 50%;
+  --object-interior-size: 70%;
 
   /* Station hub origin for radial inward scaling */
   --station-cx: 50.45%;
   --station-cy: 48.84%;
   --portal-radial-scale: 0.83;
 
-  /* Center hub logo — unchanged */
-  --logo-x: 50.45%;
-  --logo-y: 48.84%;
+  /* Center hub logo — sit on the star hub */
+  --logo-x: 50%;
+  --logo-y: 50.64%;
   --logo-size: 15%;
 
   /*

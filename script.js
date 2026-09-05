@@ -1,24 +1,94 @@
-// Open music player in compact popup window
+// Open music player in compact popup window (desktop) or in-page overlay
+// (coarse pointer / popup-blocked). Same player.html in both cases.
 const ambient = window.CrisisAmbient;
 const openPlayerBtn = document.getElementById('open-player');
+const playerShell = document.getElementById('home-player-shell');
+const playerFrame = document.getElementById('home-player-frame');
+const portalVideo = document.querySelector('.portal-video');
+const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+const coarsePointerQuery = window.matchMedia('(pointer: coarse)');
+
+function gameIsOpen() {
+  return document.getElementById('crisis-game')?.classList.contains('is-open');
+}
+
+function playerOverlayOpen() {
+  return playerShell && !playerShell.hidden;
+}
+
+function prefersInlinePlayer() {
+  return coarsePointerQuery.matches;
+}
+
+function homePortalNeeded() {
+  if (!portalVideo || reducedMotionQuery.matches) return false;
+  if (document.hidden) return false;
+  if (gameIsOpen()) return false;
+  if (playerOverlayOpen()) return false;
+  return true;
+}
+
+function pauseHomePortal() {
+  if (!portalVideo) return;
+  portalVideo.pause();
+}
+
+function resumeHomePortal() {
+  if (!portalVideo || !homePortalNeeded()) return;
+  portalVideo.play().catch(() => {});
+}
+
+function resumeHomePortalSoon() {
+  resumeHomePortal();
+  requestAnimationFrame(resumeHomePortal);
+  setTimeout(resumeHomePortal, 50);
+}
+
+function startHomeAudio() {
+  if (!ambient) return;
+  if (gameIsOpen()) return;
+  if (playerOverlayOpen()) return;
+  ambient.play('home');
+}
+
+function closeInlinePlayer() {
+  if (!playerShell) return;
+  playerShell.hidden = true;
+  if (playerFrame) playerFrame.src = 'about:blank';
+  resumeHomePortalSoon();
+  startHomeAudio();
+}
+
+function openInlinePlayer() {
+  if (!playerShell || !playerFrame) return;
+  pauseHomePortal();
+  playerFrame.src = 'player.html';
+  playerShell.hidden = false;
+}
 
 if (openPlayerBtn) {
   openPlayerBtn.addEventListener('click', () => {
     if (ambient) ambient.silencePage();
 
+    if (prefersInlinePlayer()) {
+      openInlinePlayer();
+      return;
+    }
+
     const w = 1000;
     const h = 650;
     const left = Math.max(0, Math.round((screen.width - w) / 2));
     const top = Math.max(0, Math.round((screen.height - h) / 2));
-    const features = `width=${w},height=${h},left=${left},top=${top},noopener,noreferrer`;
+    const features = `width=${w},height=${h},left=${left},top=${top}`;
     const popup = window.open('player.html', 'what-crisis-player', features);
-    if (!popup) {
-      window.open('player.html', '_blank');
-      return;
-    }
+    // Fine-pointer only: do not fall back to the overlay. Some browsers
+    // open the named popup but still return a null handle; overlaying
+    // on null would duplicate the player on desktop.
+    if (!popup) return;
 
     const resumeHome = () => {
-      if (document.getElementById('crisis-game')?.classList.contains('is-open')) return;
+      if (gameIsOpen()) return;
+      resumeHomePortalSoon();
       startHomeAudio();
     };
 
@@ -31,10 +101,21 @@ if (openPlayerBtn) {
   });
 }
 
-function startHomeAudio() {
-  if (!ambient) return;
-  if (document.getElementById('crisis-game')?.classList.contains('is-open')) return;
-  ambient.play('home');
+window.addEventListener('message', (event) => {
+  if (event.origin !== window.location.origin) return;
+  if (event.data && event.data.type === 'wc-player-close') closeInlinePlayer();
+});
+
+window.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  if (!playerOverlayOpen()) return;
+  closeInlinePlayer();
+});
+
+if (playerShell) {
+  playerShell.addEventListener('click', (event) => {
+    if (event.target === playerShell) closeInlinePlayer();
+  });
 }
 
 if (ambient) {
@@ -45,30 +126,48 @@ if (ambient) {
   window.addEventListener('keydown', unlockHome, { once: true });
   window.addEventListener('pageshow', (event) => {
     if (!event.persisted) return;
-    if (document.getElementById('crisis-game')?.classList.contains('is-open')) return;
+    if (gameIsOpen() || playerOverlayOpen()) return;
     startHomeAudio();
+    resumeHomePortalSoon();
+  });
+}
+
+window.addEventListener('pointerdown', () => resumeHomePortal());
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) pauseHomePortal();
+  else resumeHomePortalSoon();
+});
+
+const gameRoot = document.getElementById('crisis-game');
+if (gameRoot) {
+  const watchGame = () => {
+    if (gameIsOpen()) pauseHomePortal();
+    else resumeHomePortalSoon();
+  };
+  watchGame();
+  new MutationObserver(watchGame).observe(gameRoot, {
+    attributes: true,
+    attributeFilter: ['class']
   });
 }
 
 // Portal video — reduced motion + autoplay-blocked fallback only.
-const portalVideo = document.querySelector('.portal-video');
-const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-
 if (portalVideo) {
   if (reducedMotionQuery.matches) {
     portalVideo.removeAttribute('autoplay');
-    portalVideo.pause();
+    pauseHomePortal();
   } else {
-    portalVideo.play().catch(() => {});
+    resumeHomePortal();
   }
 
   reducedMotionQuery.addEventListener('change', (event) => {
     if (event.matches) {
       portalVideo.removeAttribute('autoplay');
-      portalVideo.pause();
+      pauseHomePortal();
     } else {
       portalVideo.setAttribute('autoplay', '');
-      portalVideo.play().catch(() => {});
+      resumeHomePortal();
     }
   });
 }

@@ -17,7 +17,7 @@ const tracks = [
   {
     id: 'track-one',
     title: 'Track One',
-    audio: 'audio/track-one.mp3',
+    audio: 'audio/track-one.m4a',
     video: 'video/track-one.mov',
     portal: 'assets/game/Object.png',
     artwork: 'assets/artwork/track-one.jpg'
@@ -25,7 +25,7 @@ const tracks = [
   {
     id: 'track-two',
     title: 'Track Two',
-    audio: 'audio/track-two.mp3',
+    audio: 'audio/track-two.m4a',
     video: 'video/track-two.mov',
     portal: 'assets/game/Object.png',
     artwork: 'assets/artwork/track-two.jpg'
@@ -33,7 +33,7 @@ const tracks = [
   {
     id: 'track-three',
     title: 'Track Three',
-    audio: 'audio/track-three.mp3',
+    audio: 'audio/track-three.m4a',
     video: 'video/track-three.mov',
     portal: 'assets/game/Object.png',
     artwork: 'assets/artwork/track-three.jpg'
@@ -41,7 +41,7 @@ const tracks = [
   {
     id: 'track-four',
     title: 'Track Four',
-    audio: 'audio/track-four.mp3',
+    audio: 'audio/track-four.m4a',
     video: 'video/track-four.mov',
     portal: 'assets/game/Object.png',
     artwork: 'assets/artwork/track-four.jpg'
@@ -49,7 +49,7 @@ const tracks = [
   {
     id: 'track-five',
     title: 'Track Five',
-    audio: 'audio/track-five.mp3',
+    audio: 'audio/track-five.m4a',
     video: 'video/track-five.mov',
     portal: 'assets/game/Object.png',
     artwork: 'assets/artwork/track-five.jpg'
@@ -57,7 +57,7 @@ const tracks = [
   {
     id: 'track-six',
     title: 'Track Six',
-    audio: 'audio/track-six.mp3',
+    audio: 'audio/track-six.m4a',
     video: 'video/track-six.mov',
     portal: 'assets/game/Object.png',
     artwork: 'assets/artwork/track-six.jpg'
@@ -96,14 +96,20 @@ function getTrackById(id) {
 }
 
 function getTrackInterior(track) {
-  return (track && (track.video || track.interior)) || 'videos/portal.mov';
+  return (track && (track.video || track.interior)) || 'videos/portal.mov?v=2';
+}
+
+function getTrackAudio(track) {
+  return (track && track.audio) || '';
 }
 
 /** Shared player + gallery interior video setup (muted loop, no controls). */
 function configureTrackInteriorVideo(video, track) {
   if (!video || !track) return video;
   video.muted = true;
+  video.defaultMuted = true;
   video.setAttribute('muted', '');
+  video.volume = 0;
   video.loop = true;
   video.playsInline = true;
   video.setAttribute('playsinline', '');

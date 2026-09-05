@@ -5,13 +5,15 @@ window.CrisisAmbient = (() => {
     home: 'audio/homer.mp3',
     street: 'audio/Game.mp3',
     labOff: 'audio/Lab1.mp3',
-    labOn: 'audio/Lab 2.mp3'
+    labOn: 'audio/Lab 2.mp3',
+    gallery: 'audio/git jules.mp3'
   };
 
   const players = {};
   let current = null;
 
   function get(name) {
+    if (!sources[name]) return null;
     if (!players[name]) {
       const audio = new Audio(sources[name]);
       audio.loop = true;
@@ -28,10 +30,24 @@ window.CrisisAmbient = (() => {
     audio.currentTime = 0;
   }
 
-  function silenceDomMedia() {
-    document.querySelectorAll('audio, video').forEach((el) => {
+  function muteDecorativeVideos(except) {
+    document.querySelectorAll('video').forEach((el) => {
+      if (except && el === except) return;
+      el.muted = true;
+      el.defaultMuted = true;
+      el.setAttribute('muted', '');
+      el.volume = 0;
+    });
+  }
+
+  function stopAllAudio(except) {
+    Object.keys(players).forEach((name) => {
+      if (players[name] !== except) stopNamed(name);
+    });
+    document.querySelectorAll('audio').forEach((el) => {
+      if (el === except) return;
       el.pause();
-      if ('currentTime' in el) el.currentTime = 0;
+      el.currentTime = 0;
     });
   }
 
@@ -44,9 +60,9 @@ window.CrisisAmbient = (() => {
   }
 
   function stopAll() {
-    Object.keys(players).forEach(stopNamed);
-    silenceDomMedia();
     current = null;
+    stopAllAudio();
+    muteDecorativeVideos();
   }
 
   function unlock() {
@@ -56,14 +72,16 @@ window.CrisisAmbient = (() => {
   function play(name) {
     if (!sources[name]) return;
     signalOtherTabs();
-    if (current === name) {
-      const audio = get(name);
-      if (audio.paused) audio.play().catch(() => {});
-      return;
-    }
-    stopAll();
+    const audio = get(name);
+    stopAllAudio(audio);
+    muteDecorativeVideos();
     current = name;
-    get(name).play().catch(() => {});
+    audio.volume = 1;
+    if (audio.paused) audio.play().catch(() => {});
+  }
+
+  function pauseCurrent() {
+    if (current && players[current]) players[current].pause();
   }
 
   function stop() {
@@ -71,9 +89,23 @@ window.CrisisAmbient = (() => {
     stopAll();
   }
 
-  function silencePage() {
+  function silencePage(exceptVideo) {
     signalOtherTabs();
-    stopAll();
+    current = null;
+    stopAllAudio();
+    muteDecorativeVideos(exceptVideo);
+  }
+
+  function soloVideo(video) {
+    signalOtherTabs();
+    current = null;
+    stopAllAudio();
+    muteDecorativeVideos(video);
+    if (!video) return;
+    video.muted = false;
+    video.defaultMuted = false;
+    video.removeAttribute('muted');
+    video.volume = 1;
   }
 
   window.addEventListener('pagehide', stopAll);
@@ -88,6 +120,9 @@ window.CrisisAmbient = (() => {
     stop,
     stopAll,
     silencePage,
+    soloVideo,
+    pauseCurrent,
+    muteDecorativeVideos,
     unlock,
     get current() {
       return current;

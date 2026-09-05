@@ -41,13 +41,24 @@ body {
   place-items: center;
   overflow: hidden;
   background: #000;
+  padding:
+    env(safe-area-inset-top, 0px)
+    env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px)
+    env(safe-area-inset-left, 0px);
 }
 
 .hero-stage {
   position: relative;
   aspect-ratio: var(--hero-aspect-w) / var(--hero-aspect-h);
-  width: min(100vw, calc(100dvh * var(--hero-aspect-w) / var(--hero-aspect-h)));
-  max-height: 100dvh;
+  width: min(
+    100%,
+    calc(
+      (100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))
+      * var(--hero-aspect-w) / var(--hero-aspect-h)
+    )
+  );
+  max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   flex-shrink: 0;
 }
 
@@ -142,6 +153,42 @@ body {
 .portal-open:focus-visible {
   outline: 2px solid rgba(216, 210, 194, 0.5);
   outline-offset: 4px;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .portal-open {
+    width: max(calc(var(--portal-inner-size) * 2.8), 72px);
+    height: max(calc(var(--portal-inner-size) * 2.8), 72px);
+  }
+
+  .game-trigger {
+    z-index: 4;
+  }
+}
+
+.home-player-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  background: #111;
+  padding:
+    env(safe-area-inset-top, 0px)
+    env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px)
+    env(safe-area-inset-left, 0px);
+}
+
+.home-player-shell[hidden] {
+  display: none !important;
+}
+
+.home-player-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #111;
 }
 
 /* ── Reduced motion ── */

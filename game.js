@@ -193,10 +193,10 @@
     return { w, h };
   }
 
-  const DEATH_STAY_MS = 1500;
-  const DEATH_SLAM_MS = 90;
+  const DEATH_SLAM_MS = 900;
+  const DEATH_CARD_MS = 910;
   const DEATH_CARD_FADE_MS = 300;
-  const DEATH_CARD_HOLD_MS = DEATH_STAY_MS - DEATH_SLAM_MS - DEATH_CARD_FADE_MS;
+  const DEATH_STAY_MS = DEATH_SLAM_MS + DEATH_CARD_MS;
 
   function clearDeathCards() {
     if (!deathCards) return;
@@ -603,9 +603,21 @@
     requestAnimationFrame(loop);
   }
 
+  const LAB_VIDEO_SRC = 'videos/portal.mov?v=2';
+
+  function unloadLabVideo() {
+    if (!labVideo) return;
+    labVideo.pause();
+    labVideo.removeAttribute('src');
+    labVideo.load();
+  }
+
   function playLabVideo() {
     if (!labVideo || reducedMotion.matches || !labOn) return;
     labVideo.muted = true;
+    if (!labVideo.getAttribute('src')) {
+      labVideo.src = LAB_VIDEO_SRC;
+    }
     const kick = () => {
       if (!labOn || reducedMotion.matches) return;
       if (labVideo.paused) labVideo.play().catch(() => {});
@@ -663,6 +675,7 @@
     clearDeathCards();
     death = null;
     setLabOff();
+    unloadLabVideo();
     keys.clear();
     pointer = null;
     if (ambient) ambient.play('home');
@@ -777,6 +790,19 @@
       window.location.href = 'julian.html';
     });
   }
+
+  document.addEventListener('visibilitychange', () => {
+    if (!labVideo) return;
+    if (document.hidden) {
+      labVideo.pause();
+      return;
+    }
+    if (inLab && labOn) playLabVideo();
+  });
+
+  window.addEventListener('pagehide', () => {
+    if (labVideo) labVideo.pause();
+  });
 
   loadSprites()
     .then(() => { assetsReady = true; })
