@@ -12,10 +12,13 @@
 .well-stage {
   --well-aspect-w: 2632;
   --well-aspect-h: 2178;
+}
 
+.well-stage,
+.well-object-end-stage {
   --object-interior-x: 50%;
-  --object-interior-y: 56%;
-  --object-interior-size: 76%;
+  --object-interior-y: 50%;
+  --object-interior-size: 70%;
 }
 
 .well-viewport {
@@ -29,12 +32,21 @@
   --well-hold-ms: 5000ms;
   --well-zoom-ms: 11000ms;
   --well-fade-after-zoom-ms: 9000ms;
-  --well-fade-ms: 7800ms;
-  --well-mask-hold-ms: 1750ms;
-  --well-final-ms: 7500ms;
-  --well-moon-hold-ms: 2000ms;
-  --well-moon-ms: 22000ms;
-  --well-home-ms: 16000ms;
+  --well-fade-ms: 5200ms;
+  --well-mask-hold-ms: 450ms;
+  --well-final-ms: 5000ms;
+  --well-moon-hold-ms: 500ms;
+  --well-moon-ms: 8500ms;
+  --well-moon-after-ms: 400ms;
+  --well-coda-ms: 6500ms;
+  --well-coda-text-delay-ms: 2500ms;
+  --well-coda-text-ms: 4500ms;
+  --well-black-ms: 900ms;
+  --well-object-end-ms: 0ms;
+  --well-home-ms: 3500ms;
+  --well-portal-loops: 3;
+  --well-gallery-loops: 3;
+  --well-wind-ms: 7500ms;
   --well-zoom-ease: cubic-bezier(0.4, 0, 0.2, 1);
 
   --final-aspect-w: 1258;

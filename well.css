@@ -97,6 +97,197 @@ html, body {
   object-fit: fill;
 }
 
+.well-final.is-leaving {
+  opacity: 0;
+  transition-duration: var(--well-coda-ms);
+}
+
+.well-coda {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  isolation: isolate;
+  transform: translate3d(0, 0, 0);
+  background: #050403;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--well-coda-ms) var(--well-zoom-ease);
+}
+
+.well-coda.is-visible {
+  opacity: 1;
+}
+
+.well-coda-image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  user-select: none;
+  pointer-events: none;
+}
+
+.well-coda-text {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2em;
+  width: min(92vw, 72rem);
+  margin: 0;
+  z-index: 21;
+  font-family: 'Special Elite', 'Courier New', Courier, monospace;
+  font-size: clamp(3.15rem, 8.4vw, 5.1rem);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  line-height: 1.25;
+  text-align: center;
+  color: #f3ece0;
+  text-shadow:
+    0 1px 0 #000,
+    0 0 6px #000,
+    0 0 18px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+}
+
+.well-coda-line {
+  display: block;
+  opacity: 0;
+  transition: opacity var(--well-coda-text-ms, 9000ms) ease;
+}
+
+.well-coda-text em {
+  font-style: italic;
+  font-synthesis: style;
+  display: inline-block;
+  transform: skewX(-12deg);
+}
+
+.well-coda-line.is-visible {
+  opacity: 1;
+}
+
+.well-blackout {
+  position: absolute;
+  inset: 0;
+  z-index: 22;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--well-black-ms, 900ms) ease;
+}
+
+.well-blackout.is-visible {
+  opacity: 1;
+}
+
+.well-object-end {
+  position: absolute;
+  inset: 0;
+  z-index: 23;
+  display: grid;
+  place-items: center;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: none;
+}
+
+.well-object-end-space {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.well-object-end.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.well-object-end-stage {
+  position: relative;
+  width: min(100vw, 100dvh);
+  height: min(100vw, 100dvh);
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  z-index: 1;
+}
+
+.well-object-end-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.well-object-end-film-inner {
+  position: absolute;
+  left: var(--object-interior-x);
+  top: var(--object-interior-y);
+  width: var(--object-interior-size);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  overflow: hidden;
+  background: #000;
+  z-index: 0;
+}
+
+.well-object-end-film {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  border: 0;
+  pointer-events: none;
+}
+
+.well-object-end-shell {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+
+  -webkit-mask-image: radial-gradient(
+    calc(var(--object-interior-size) * 0.5)
+      calc(var(--object-interior-size) * 0.5)
+      at var(--object-interior-x) var(--object-interior-y),
+    transparent 99.6%,
+    #000 100%
+  );
+  mask-image: radial-gradient(
+    calc(var(--object-interior-size) * 0.5)
+      calc(var(--object-interior-size) * 0.5)
+      at var(--object-interior-x) var(--object-interior-y),
+    transparent 99.6%,
+    #000 100%
+  );
+}
+
 .well-photo {
   position: absolute;
   inset: 0;
@@ -156,11 +347,19 @@ html, body {
   position: absolute;
   inset: 2%;
   border-radius: 50%;
-  overflow: hidden;
-  overflow: clip;
-  isolation: isolate;
-  clip-path: circle(50%);
+  overflow: visible;
   background: #000;
+}
+
+.well-filters {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .well-head-film-inner {
@@ -169,40 +368,27 @@ html, body {
   top: var(--object-interior-y);
   width: var(--object-interior-size);
   aspect-ratio: 1;
-  transform: translate3d(-50%, -50%, 0);
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   overflow: hidden;
-  overflow: clip;
-  isolation: isolate;
-  contain: paint;
-  clip-path: circle(50%);
-  -webkit-mask-image: radial-gradient(circle closest-side, #000 99.6%, transparent 100%);
-  mask-image: radial-gradient(circle closest-side, #000 99.6%, transparent 100%);
   background: #000;
   z-index: 0;
 }
 
-.well-film-source {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.well-head-film {
+.well-head-liquid {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center;
   display: block;
   border-radius: 50%;
-  clip-path: circle(50%);
+  overflow: hidden;
   pointer-events: none;
-  -webkit-appearance: none;
-  appearance: none;
+}
+
+.well-head-still {
+  pointer-events: none;
+  user-select: none;
 }
 
 .well-head-shell {
@@ -231,10 +417,6 @@ html, body {
   );
 }
 
-.well-head-film::-webkit-media-controls,
-.well-head-film::-webkit-media-controls-enclosure {
-  display: none !important;
-}
 
 .well-head.debug .well-head-clip {
   outline: 2px solid rgba(232, 80, 54, 0.85);
@@ -245,7 +427,7 @@ html, body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .well-head-film {
-    display: none;
+  .well-head-still {
+    animation: none;
   }
 }

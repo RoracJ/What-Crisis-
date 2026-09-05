@@ -4,10 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>What Crisis?</title>
-  <link rel="stylesheet" href="well-config.css?v=6">
-  <link rel="stylesheet" href="well.css?v=3">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="well-config.css?v=17">
+  <link rel="stylesheet" href="well.css?v=22">
+  <link rel="preload" as="image" href="assets/well-coda.jpg">
+  <link rel="preload" as="image" href="assets/Gallery.png">
 </head>
 <body>
+  <svg class="well-filters" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <defs id="well-filter-defs"></defs>
+  </svg>
+
   <div class="well-viewport" id="well-viewport">
     <div class="well-stage" id="well-stage">
       <img
@@ -46,23 +55,56 @@
         />
       </div>
     </div>
+    <div class="well-coda" id="well-coda">
+      <img
+        class="well-coda-image"
+        src="assets/well-coda.jpg"
+        alt=""
+        width="1970"
+        height="2066"
+        decoding="async"
+        draggable="false"
+      />
+    </div>
+    <p class="well-coda-text" id="well-coda-text">
+      <span class="well-coda-line" id="well-coda-line-1">Sated yet???</span>
+      <span class="well-coda-line" id="well-coda-line-2"><em>Hungry Ghost</em>???</span>
+    </p>
+    <div class="well-blackout" id="well-blackout"></div>
+    <div class="well-object-end" id="well-object-end">
+      <img
+        class="well-object-end-space"
+        src="assets/Gallery.png"
+        alt=""
+        width="1254"
+        height="1254"
+        decoding="async"
+        draggable="false"
+      />
+      <button type="button" class="well-object-end-stage" id="well-object-end-home" aria-label="Return home">
+        <div class="well-object-end-clip">
+          <div class="well-object-end-film-inner">
+            <video
+              class="well-object-end-film"
+              id="well-object-end-film"
+              src="videos/portal.mp4?v=1"
+              playsinline
+              webkit-playsinline
+              preload="auto"
+            ></video>
+          </div>
+          <img
+            class="well-object-end-shell"
+            src="assets/game/Object.png"
+            alt=""
+            draggable="false"
+          />
+        </div>
+      </button>
+    </div>
   </div>
 
-  <video
-    id="well-film-source"
-    class="well-film-source"
-    muted
-    loop
-    playsinline
-    webkit-playsinline
-    autoplay
-    preload="auto"
-    disablepictureinpicture
-    src="videos/portal.mov"
-    aria-hidden="true"
-  ></video>
-
   <script src="site-access.js"></script>
-  <script src="well.js?v=6"></script>
+  <script src="well.js?v=42"></script>
 </body>
 </html>
