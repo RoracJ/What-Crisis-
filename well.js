@@ -65,6 +65,7 @@
   let sequenceDone = false;
   let cinematicStarted = false;
   let codaStarted = false;
+  let game2Started = false;
   let objectEndStarted = false;
   let goingHome = false;
   let windRaf = 0;
@@ -565,11 +566,29 @@
     stage.classList.add('is-covered');
   });
 
+  function enterMiniGame2() {
+    if (game2Started) return;
+    game2Started = true;
+    cancelSequence();
+    stopLabOn();
+    stopGalleryEnd();
+    setInteriorsRunning(false);
+    if (window.CrisisAmbient) window.CrisisAmbient.silencePage();
+    if (window.CrisisGame2) window.CrisisGame2.enter();
+  }
+
   function startScene() {
+    if (game2Started && !objectEndStarted) return;
     setInteriorsRunning(!objectEndStarted);
     if (objectEndStarted) resumePortalEnd();
-    else playLabOn();
+    else if (!game2Started) playLabOn();
   }
+
+  window.addEventListener('wc-game2-complete', () => {
+    if (!game2Started || goingHome) return;
+    if (window.CrisisGame2) window.CrisisGame2.exit();
+    showObjectEnd();
+  });
 
   function pauseScene() {
     setInteriorsRunning(false);
@@ -699,20 +718,23 @@
       finishSequence();
     }, moonAt);
 
-    later(showCoda, codaAt);
+    // Previous destination was showCoda (Hungry Ghost text → portal → home).
+    later(enterMiniGame2, codaAt);
 
     finaleStage.addEventListener('transitionend', (event) => {
       if (event.propertyName !== 'transform') return;
       if (!finaleStage.classList.contains('is-zoomed')) return;
-      later(showCoda, moonAfterMs);
+      later(enterMiniGame2, moonAfterMs);
     });
   }
 
   function startSequence() {
+    if (game2Started) return;
     cancelSequence();
     cinematicStarted = false;
     sequenceDone = false;
     codaStarted = false;
+    game2Started = false;
     objectEndStarted = false;
     goingHome = false;
     portalLoopCount = 0;
@@ -730,6 +752,7 @@
     setInteriorsRunning(false);
     stopLabOn();
     stopPortalEnd();
+    if (window.CrisisGame2) window.CrisisGame2.exit();
   }
 
   document.addEventListener('visibilitychange', () => {
@@ -778,6 +801,10 @@
   signalOtherTabs();
   startSequence();
   startScene();
+  if (new URLSearchParams(window.location.search).has('game2')) {
+    cancelSequence();
+    enterMiniGame2();
+  }
   if (new URLSearchParams(window.location.search).has('well-end')) {
     cancelSequence();
     showObjectEnd();
