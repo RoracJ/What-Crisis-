@@ -36,9 +36,6 @@
   let onResize = null;
   let onVisibility = null;
   let onBlur = null;
-  let pointer = null;
-  let pointerOrigin = null;
-  let pointerMoved = false;
   let music = null;
 
   function ensureMusic() {
@@ -434,20 +431,6 @@
     player.tierId = tier.id;
   }
 
-  function maybeDismount(lad) {
-    const from = tierById(lad.from);
-    const to = tierById(lad.to);
-    if (Math.abs(player.y - to.y) <= 8 && onPlatformX(to, player.x)) {
-      landOn(to);
-      return true;
-    }
-    if (Math.abs(player.y - from.y) <= 8 && onPlatformX(from, player.x)) {
-      landOn(from);
-      return true;
-    }
-    return false;
-  }
-
   function pressKey(name) {
     if (!name) return;
     keys.add(name);
@@ -461,24 +444,13 @@
     return keys.has(name);
   }
 
-  function toWorld(clientX, clientY) {
-    return {
-      x: (clientX - view.ox) / view.scale,
-      y: (clientY - view.oy) / view.scale
-    };
-  }
-
   function updatePlayer(dt) {
     if (dead || reachedTop) return;
 
-    const left = keyHeld('arrowleft') || keyHeld('a')
-      || (pointer && pointer.x < player.x - 12);
-    const right = keyHeld('arrowright') || keyHeld('d')
-      || (pointer && pointer.x > player.x + 12);
-    const up = keyHeld('arrowup') || keyHeld('w')
-      || (pointer && pointer.y < player.y - C.PLAYER_HEIGHT * 0.55);
-    const down = keyHeld('arrowdown') || keyHeld('s')
-      || (pointer && pointer.y > player.y + 10);
+    const left = keyHeld('arrowleft') || keyHeld('a');
+    const right = keyHeld('arrowright') || keyHeld('d');
+    const up = keyHeld('arrowup') || keyHeld('w');
+    const down = keyHeld('arrowdown') || keyHeld('s');
     const jump = keyHeld(' ');
 
     const lad = overlappingLadder(player.x, player.y);
@@ -505,11 +477,9 @@
       if (down) player.y += C.CLIMB_SPEED * dt;
       if (player.y < to.y) player.y = to.y;
       if (player.y > from.y) player.y = from.y;
+      if (left || right) player.facing = left ? -1 : 1;
 
-      if (left || right) {
-        player.facing = left ? -1 : 1;
-        maybeDismount(player.ladder);
-      } else if (player.y <= to.y + 0.5 && !down) {
+      if (player.y <= to.y + 0.5 && !down) {
         landOn(to);
       } else if (player.y >= from.y - 0.5 && !up) {
         landOn(from);
@@ -901,9 +871,6 @@
     };
     onBlur = () => {
       keys.clear();
-      pointer = null;
-      pointerOrigin = null;
-      pointerMoved = false;
     };
     onVisibility = () => {
       if (!open) return;
@@ -911,7 +878,6 @@
         stopLoop();
         clearSpawn();
         keys.clear();
-        pointer = null;
         if (music) music.pause();
       } else if (!running) {
         lastT = performance.now();
@@ -928,39 +894,12 @@
     window.addEventListener('blur', onBlur);
     document.addEventListener('visibilitychange', onVisibility);
     root.addEventListener('pointerdown', onPointerDown);
-    root.addEventListener('pointermove', onPointerMove);
-    root.addEventListener('pointerup', onPointerUp);
-    root.addEventListener('pointercancel', onPointerUp);
   }
 
-  function onPointerDown(event) {
+  function onPointerDown() {
     if (!open) return;
     startMusic();
     focusPlayfield();
-    root.setPointerCapture(event.pointerId);
-    pointerOrigin = { x: event.clientX, y: event.clientY };
-    pointerMoved = false;
-    pointer = toWorld(event.clientX, event.clientY);
-  }
-
-  function onPointerMove(event) {
-    if (!pointerOrigin) return;
-    if (Math.hypot(event.clientX - pointerOrigin.x, event.clientY - pointerOrigin.y) > 8) {
-      pointerMoved = true;
-    }
-    pointer = toWorld(event.clientX, event.clientY);
-  }
-
-  function onPointerUp(event) {
-    if (!pointerOrigin) return;
-    if (!pointerMoved && player && !dead && !reachedTop && player.grounded && !player.climbing) {
-      pressKey(' ');
-      window.setTimeout(() => releaseKey(' '), 90);
-    }
-    pointer = null;
-    pointerOrigin = null;
-    pointerMoved = false;
-    if (root.hasPointerCapture(event.pointerId)) root.releasePointerCapture(event.pointerId);
   }
 
   function unbindInput() {
@@ -971,18 +910,12 @@
     window.removeEventListener('blur', onBlur);
     document.removeEventListener('visibilitychange', onVisibility);
     root.removeEventListener('pointerdown', onPointerDown);
-    root.removeEventListener('pointermove', onPointerMove);
-    root.removeEventListener('pointerup', onPointerUp);
-    root.removeEventListener('pointercancel', onPointerUp);
     onKeyDown = null;
     onKeyUp = null;
     onResize = null;
     onVisibility = null;
     onBlur = null;
     keys.clear();
-    pointer = null;
-    pointerOrigin = null;
-    pointerMoved = false;
   }
 
   function enter() {

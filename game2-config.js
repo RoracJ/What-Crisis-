@@ -28,7 +28,7 @@ window.CrisisGame2Config = {
   PLAYER_JUMP: 430,
   GRAVITY: 1450,
   CLIMB_SPEED: 96,
-  CLIMB_RANGE: 18,
+  CLIMB_RANGE: 26,
 
   PLAYER_HEIGHT: 78,
   PLAYER_START_X: 86,
@@ -42,8 +42,8 @@ window.CrisisGame2Config = {
 
   OBJECT_X: 402,
   OBJECT_TIER: 'top',
-  OBJECT_HEIGHT: 68,
-  OBJECT_LIFT: 40,
+  OBJECT_HEIGHT: 136,
+  OBJECT_LIFT: 68,
   OBJECT_HURT: { xFrac: 0.52, yFrac: 0.52 },
   PORTAL_ZOOM_MS: 1600,
   PORTAL_ZOOM_FILL: 2.4,

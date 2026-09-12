@@ -6,6 +6,7 @@
   <title>What Crisis?</title>
   <link rel="stylesheet" href="gallery-config.css?v=3">
   <link rel="stylesheet" href="julian.css?v=4">
+  <link rel="stylesheet" href="game3.css?v=2">
 </head>
 <body>
   <div id="julian-gallery" class="gallery-viewport" hidden>
@@ -34,8 +35,34 @@
     <img id="julian-art-image" alt="">
   </div>
 
+  <div id="crisis-game3" class="crisis-game3" aria-hidden="true" tabindex="-1">
+    <canvas id="crisis-game3-canvas" class="crisis-game3-canvas"></canvas>
+  </div>
+
   <script src="site-access.js?v=3"></script>
   <script src="tracks.js"></script>
-  <script src="julian.js"></script>
+  <script src="game3-config.js?v=6"></script>
+  <script src="game3.js?v=9"></script>
+  <script>
+    (function () {
+      var art = document.getElementById('julian-artwork');
+      var img = document.getElementById('julian-art-image');
+      var gallery = document.getElementById('julian-gallery');
+      if (!art) return;
+      window.__artArmed = 0;
+      function enterFromArt(event) {
+        if (art.hidden) return;
+        if (event) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+        if (performance.now() < (window.__artArmed || 0)) return;
+        window.location.replace('well.html');
+      }
+      art.addEventListener('click', enterFromArt, true);
+      if (img) img.addEventListener('click', enterFromArt, true);
+    })();
+  </script>
+  <script src="julian.js?v=9"></script>
 </body>
 </html>

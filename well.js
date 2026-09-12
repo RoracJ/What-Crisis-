@@ -66,6 +66,7 @@
   let cinematicStarted = false;
   let codaStarted = false;
   let game2Started = false;
+  let game3Started = false;
   let objectEndStarted = false;
   let goingHome = false;
   let windRaf = 0;
@@ -574,20 +575,41 @@
     stopGalleryEnd();
     setInteriorsRunning(false);
     if (window.CrisisAmbient) window.CrisisAmbient.silencePage();
+    if (window.CrisisGame3) window.CrisisGame3.exit();
     if (window.CrisisGame2) window.CrisisGame2.enter();
   }
 
+  function enterMiniGame3() {
+    if (game3Started) return;
+    game3Started = true;
+    cancelSequence();
+    stopLabOn();
+    stopGalleryEnd();
+    setInteriorsRunning(false);
+    if (window.CrisisAmbient) window.CrisisAmbient.silencePage();
+    if (window.CrisisGame2) window.CrisisGame2.exit();
+    if (window.CrisisGame3) window.CrisisGame3.enter();
+  }
+
   function startScene() {
-    if (game2Started && !objectEndStarted) return;
+    if ((game2Started || game3Started) && !objectEndStarted) return;
     setInteriorsRunning(!objectEndStarted);
     if (objectEndStarted) resumePortalEnd();
-    else if (!game2Started) playLabOn();
+    else if (!game2Started && !game3Started) playLabOn();
   }
 
   window.addEventListener('wc-game2-complete', () => {
     if (!game2Started || goingHome) return;
     if (window.CrisisGame2) window.CrisisGame2.exit();
     showObjectEnd();
+  });
+
+  window.addEventListener('wc-game3-complete', () => {
+    if (goingHome || objectEndStarted) return;
+    if (window.CrisisGame3) window.CrisisGame3.exit();
+    game3Started = false;
+    startSequence();
+    startScene();
   });
 
   function pauseScene() {
@@ -729,12 +751,13 @@
   }
 
   function startSequence() {
-    if (game2Started) return;
+    if (game2Started || game3Started) return;
     cancelSequence();
     cinematicStarted = false;
     sequenceDone = false;
     codaStarted = false;
     game2Started = false;
+    game3Started = false;
     objectEndStarted = false;
     goingHome = false;
     portalLoopCount = 0;
@@ -753,6 +776,7 @@
     stopLabOn();
     stopPortalEnd();
     if (window.CrisisGame2) window.CrisisGame2.exit();
+    if (window.CrisisGame3) window.CrisisGame3.exit();
   }
 
   document.addEventListener('visibilitychange', () => {
@@ -799,11 +823,14 @@
   });
 
   signalOtherTabs();
-  startSequence();
-  startScene();
-  if (new URLSearchParams(window.location.search).has('game2')) {
-    cancelSequence();
+  const bootParams = new URLSearchParams(window.location.search);
+  if (bootParams.has('photo') || bootParams.has('class')) {
+    startSequence();
+    startScene();
+  } else if (bootParams.has('game2')) {
     enterMiniGame2();
+  } else {
+    enterMiniGame3();
   }
   if (new URLSearchParams(window.location.search).has('well-end')) {
     cancelSequence();

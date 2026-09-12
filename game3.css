@@ -1,0 +1,29 @@
+.crisis-game3 {
+  position: fixed;
+  inset: 0;
+  z-index: 41;
+  background: #000;
+  overflow: hidden;
+  touch-action: none;
+  isolation: isolate;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.crisis-game3.is-open {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.35s ease;
+  outline: none;
+}
+
+.crisis-game3-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #000;
+}

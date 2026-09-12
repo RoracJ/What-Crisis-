@@ -22,6 +22,7 @@
 
   let portalFilms = [];
   let galleryActive = false;
+  let artworkArmedAt = 0;
 
   function stopGalleryAudio() {
     galleryAudio.pause();
@@ -81,10 +82,27 @@
   function goWell() {
     stopGalleryScene();
     signalOtherTabsStop();
+    if (window.CrisisGame3) window.CrisisGame3.exit();
     window.location.replace('well.html');
   }
 
-  artwork.addEventListener('click', goWell);
+  function goClassPhoto() {
+    stopGalleryScene();
+    signalOtherTabsStop();
+    if (window.CrisisGame3) window.CrisisGame3.exit();
+    window.location.replace('well.html?photo');
+  }
+
+  function enterMiniGame3() {
+    if (performance.now() < artworkArmedAt) return;
+    goWell();
+  }
+
+  window.addEventListener('wc-game3-complete', () => {
+    if (!window.__wcGame3Won) return;
+    window.__wcGame3Won = false;
+    goClassPhoto();
+  });
 
   function openGalleryArtwork(track) {
     if (!track) return;
@@ -106,6 +124,8 @@
     portalFilms = [];
     artwork.hidden = false;
     artImage.src = track.artwork;
+    artworkArmedAt = performance.now() + 600;
+    window.__artArmed = artworkArmedAt;
     document.body.style.overflow = 'hidden';
   }
 
@@ -235,8 +255,14 @@
     showGallery();
   });
 
-  window.addEventListener('pagehide', stopGalleryScene);
-  window.addEventListener('unload', stopGalleryScene);
+  window.addEventListener('pagehide', () => {
+    stopGalleryScene();
+    if (window.CrisisGame3) window.CrisisGame3.exit();
+  });
+  window.addEventListener('unload', () => {
+    stopGalleryScene();
+    if (window.CrisisGame3) window.CrisisGame3.exit();
+  });
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
@@ -267,6 +293,15 @@
 
   window.addEventListener('pointerdown', unlockGalleryPlayback, { once: true });
   window.addEventListener('keydown', unlockGalleryPlayback, { once: true });
+
+  if (new URLSearchParams(window.location.search).has('game3')) {
+    if (window.SiteAccess && !window.SiteAccess.allows('gallery')) {
+      goHome();
+      return;
+    }
+    enterMiniGame3();
+    return;
+  }
 
   if (artId) {
     if (window.SiteAccess && !window.SiteAccess.allows('artwork')) {
