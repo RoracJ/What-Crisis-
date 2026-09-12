@@ -28,6 +28,28 @@
   let onResize = null;
   let onVisibility = null;
   let onBlur = null;
+  let music = null;
+
+  function ensureMusic() {
+    if (music || !C.MUSIC_SRC) return;
+    music = new Audio(C.MUSIC_SRC);
+    music.loop = true;
+    music.preload = 'auto';
+    music.hidden = true;
+    document.body.appendChild(music);
+  }
+
+  function startMusic() {
+    ensureMusic();
+    if (!music) return;
+    music.play().catch(() => {});
+  }
+
+  function stopMusic() {
+    if (!music) return;
+    music.pause();
+    music.currentTime = 0;
+  }
 
   function loadImage(src) {
     return new Promise((resolve, reject) => {
@@ -529,6 +551,7 @@
 
   function onPointerDown() {
     if (!open) return;
+    startMusic();
     focusPlayfield();
   }
 
@@ -536,6 +559,7 @@
     if (onKeyDown) return;
     onKeyDown = (event) => {
       if (!open) return;
+      startMusic();
       const key = canonicalKey(event);
       if (!isGameKey(key)) return;
       event.preventDefault();
@@ -556,11 +580,13 @@
       if (document.visibilityState === 'hidden') {
         stopLoop();
         keys.clear();
+        if (music) music.pause();
       } else if (!running) {
         lastT = performance.now();
         running = true;
         raf = window.requestAnimationFrame(loop);
         focusPlayfield();
+        startMusic();
       }
     };
     window.addEventListener('keydown', onKeyDown, true);
@@ -599,6 +625,7 @@
     resetRun();
     running = true;
     raf = window.requestAnimationFrame(loop);
+    startMusic();
     if (!assetsReady) {
       loadSprites().then(() => {
         if (open) {
@@ -612,6 +639,7 @@
   function exit() {
     if (!open && !running) return;
     open = false;
+    stopMusic();
     stopLoop();
     clearComplete();
     clearShot();

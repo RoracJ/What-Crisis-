@@ -22,6 +22,7 @@ window.CrisisGame3Config = {
   ENEMY_SRC: 'assets/game/Headless.png',
   BRIEFCASE_SRC: 'assets/game/Briefcase.png',
   SAUCER_SRC: 'assets/game/saucer.png',
+  MUSIC_SRC: 'audio/Game.mp3',
 
   PLAYER_SPEED: 148,
   PLAYER_HEIGHT: 58,

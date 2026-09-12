@@ -21,7 +21,7 @@ window.CrisisGame2Config = {
   SPACE_SRC: 'assets/well-final.jpg',
   SPACE_FOCUS_X: 0.178,
   SPACE_FOCUS_Y: 0.219,
-  MUSIC_SRC: 'audio/git jules.mp3',
+  MUSIC_SRC: 'audio/Game.mp3',
   HEAD_SRC: 'assets/game/Head.png',
 
   PLAYER_SPEED: 132,
