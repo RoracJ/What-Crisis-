@@ -37,6 +37,10 @@
   let onVisibility = null;
   let onBlur = null;
   let music = null;
+  let pointer = null;
+  let pointerOrigin = null;
+  let pointerMoved = false;
+  let jumpPulse = false;
 
   function ensureMusic() {
     if (music || !C.MUSIC_SRC) return;
@@ -197,10 +201,17 @@
     assetsReady = true;
   }
 
+  function viewportSize() {
+    const vv = window.visualViewport;
+    return {
+      cw: Math.round((vv && vv.width) || window.innerWidth),
+      ch: Math.round((vv && vv.height) || window.innerHeight)
+    };
+  }
+
   function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const cw = window.innerWidth;
-    const ch = window.innerHeight;
+    const { cw, ch } = viewportSize();
     canvas.width = Math.floor(cw * dpr);
     canvas.height = Math.floor(ch * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -208,8 +219,7 @@
   }
 
   function applyView() {
-    const cw = window.innerWidth;
-    const ch = window.innerHeight;
+    const { cw, ch } = viewportSize();
     const base = Math.min(cw / C.WORLD_W, ch / C.WORLD_H);
     view.dw = C.WORLD_W * base;
     view.dh = C.WORLD_H * base;
@@ -233,6 +243,16 @@
 
   function sy(y) {
     return view.oy + y * view.scale;
+  }
+
+  function toWorld(clientX, clientY) {
+    const vv = window.visualViewport;
+    const ox = (vv && vv.offsetLeft) || 0;
+    const oy = (vv && vv.offsetTop) || 0;
+    return {
+      x: (clientX - ox - view.ox) / view.scale,
+      y: (clientY - oy - view.oy) / view.scale
+    };
   }
 
   function clearSpawn() {
@@ -447,11 +467,18 @@
   function updatePlayer(dt) {
     if (dead || reachedTop) return;
 
-    const left = keyHeld('arrowleft') || keyHeld('a');
-    const right = keyHeld('arrowright') || keyHeld('d');
-    const up = keyHeld('arrowup') || keyHeld('w');
-    const down = keyHeld('arrowdown') || keyHeld('s');
-    const jump = keyHeld(' ');
+    const movePx = C.TOUCH_MOVE_PX || 16;
+    const pointerSteer = pointer && pointerMoved;
+    const left = keyHeld('arrowleft') || keyHeld('a')
+      || (pointerSteer && pointer.x < player.x - movePx);
+    const right = keyHeld('arrowright') || keyHeld('d')
+      || (pointerSteer && pointer.x > player.x + movePx);
+    const up = keyHeld('arrowup') || keyHeld('w')
+      || (pointerSteer && pointer.y < player.y - movePx);
+    const down = keyHeld('arrowdown') || keyHeld('s')
+      || (pointerSteer && pointer.y > player.y + movePx);
+    const jump = keyHeld(' ') || jumpPulse;
+    jumpPulse = false;
 
     const lad = overlappingLadder(player.x, player.y);
 
@@ -871,6 +898,7 @@
     };
     onBlur = () => {
       keys.clear();
+      clearPointer();
     };
     onVisibility = () => {
       if (!open) return;
@@ -878,6 +906,8 @@
         stopLoop();
         clearSpawn();
         keys.clear();
+        clearPointer();
+        jumpPulse = false;
         if (music) music.pause();
       } else if (!running) {
         lastT = performance.now();
@@ -891,15 +921,70 @@
     window.addEventListener('keydown', onKeyDown, true);
     window.addEventListener('keyup', onKeyUp, true);
     window.addEventListener('resize', onResize);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', onResize);
     window.addEventListener('blur', onBlur);
     document.addEventListener('visibilitychange', onVisibility);
-    root.addEventListener('pointerdown', onPointerDown);
+    root.addEventListener('pointerdown', onPointerDown, { passive: false });
+    root.addEventListener('pointermove', onPointerMove, { passive: false });
+    root.addEventListener('pointerup', onPointerUp, { passive: false });
+    root.addEventListener('pointercancel', onPointerUp, { passive: false });
+    root.addEventListener('touchstart', onTouchGuard, { passive: false });
+    root.addEventListener('touchmove', onTouchGuard, { passive: false });
+    root.addEventListener('contextmenu', onContextMenu);
   }
 
-  function onPointerDown() {
-    if (!open) return;
+  function clearPointer() {
+    pointer = null;
+    pointerOrigin = null;
+    pointerMoved = false;
+  }
+
+  function onPointerDown(event) {
+    if (!open || dead || reachedTop) return;
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    if (event.cancelable) event.preventDefault();
     startMusic();
     focusPlayfield();
+    try {
+      root.setPointerCapture(event.pointerId);
+    } catch {
+      /* capture not required */
+    }
+    pointerOrigin = { x: event.clientX, y: event.clientY };
+    pointerMoved = false;
+    pointer = toWorld(event.clientX, event.clientY);
+  }
+
+  function onPointerMove(event) {
+    if (!pointerOrigin) return;
+    if (event.cancelable) event.preventDefault();
+    const slop = C.TOUCH_TAP_PX || 14;
+    if (Math.hypot(event.clientX - pointerOrigin.x, event.clientY - pointerOrigin.y) > slop) {
+      pointerMoved = true;
+    }
+    pointer = toWorld(event.clientX, event.clientY);
+  }
+
+  function onPointerUp(event) {
+    if (!pointerOrigin) return;
+    if (event.cancelable) event.preventDefault();
+    if (!pointerMoved && !dead && !reachedTop) jumpPulse = true;
+    clearPointer();
+    try {
+      if (root.hasPointerCapture(event.pointerId)) root.releasePointerCapture(event.pointerId);
+    } catch {
+      /* already released */
+    }
+  }
+
+  function onTouchGuard(event) {
+    if (!open || dead || reachedTop) return;
+    if (event.cancelable) event.preventDefault();
+  }
+
+  function onContextMenu(event) {
+    if (!open) return;
+    event.preventDefault();
   }
 
   function unbindInput() {
@@ -907,15 +992,24 @@
     window.removeEventListener('keydown', onKeyDown, true);
     window.removeEventListener('keyup', onKeyUp, true);
     window.removeEventListener('resize', onResize);
+    if (window.visualViewport) window.visualViewport.removeEventListener('resize', onResize);
     window.removeEventListener('blur', onBlur);
     document.removeEventListener('visibilitychange', onVisibility);
     root.removeEventListener('pointerdown', onPointerDown);
+    root.removeEventListener('pointermove', onPointerMove);
+    root.removeEventListener('pointerup', onPointerUp);
+    root.removeEventListener('pointercancel', onPointerUp);
+    root.removeEventListener('touchstart', onTouchGuard);
+    root.removeEventListener('touchmove', onTouchGuard);
+    root.removeEventListener('contextmenu', onContextMenu);
     onKeyDown = null;
     onKeyUp = null;
     onResize = null;
     onVisibility = null;
     onBlur = null;
     keys.clear();
+    jumpPulse = false;
+    clearPointer();
   }
 
   function enter() {

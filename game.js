@@ -735,19 +735,21 @@
 
   canvas.addEventListener('pointerdown', (event) => {
     if (!open || inLab) return;
+    if (event.cancelable) event.preventDefault();
     canvas.setPointerCapture(event.pointerId);
     pointerOrigin = { x: event.clientX, y: event.clientY };
     pointerMoved = false;
     pointer = toWorld(event.clientX, event.clientY);
-  });
+  }, { passive: false });
 
   canvas.addEventListener('pointermove', (event) => {
     if (!pointerOrigin) return;
+    if (event.cancelable) event.preventDefault();
     if (Math.hypot(event.clientX - pointerOrigin.x, event.clientY - pointerOrigin.y) > 10) {
       pointerMoved = true;
     }
     pointer = toWorld(event.clientX, event.clientY);
-  });
+  }, { passive: false });
 
   function endPointer(event) {
     if (!pointerOrigin) return;

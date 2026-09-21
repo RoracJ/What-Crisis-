@@ -56,6 +56,9 @@ window.CrisisGame3Config = {
   WIN_ZOOM_SCALE: 5.2,
   WIN_SPIN: 16,
 
+  TOUCH_TAP_PX: 14,
+  TOUCH_MOVE_PX: 16,
+
   CARS: [
     { src: 'assets/game/saucer.png', x: 88, y: 78, h: 30 },
     { src: 'assets/game/saucer.png', x: 240, y: 78, h: 30 },

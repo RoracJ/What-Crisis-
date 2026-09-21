@@ -65,6 +65,9 @@ window.CrisisGame2Config = {
 
   DEATH_RESET_MS: 950,
 
+  TOUCH_TAP_PX: 14,
+  TOUCH_MOVE_PX: 16,
+
   PLATFORM_THICKNESS: 14,
   LADDER_WIDTH: 22,
   LADDER_RUNG: 13,

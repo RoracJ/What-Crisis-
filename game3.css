@@ -5,6 +5,10 @@
   background: #000;
   overflow: hidden;
   touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  overscroll-behavior: none;
   isolation: isolate;
   visibility: hidden;
   opacity: 0;
@@ -26,4 +30,9 @@
   height: 100%;
   display: block;
   background: #000;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
