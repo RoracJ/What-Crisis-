@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no">
   <title>What Crisis?</title>
   <link rel="stylesheet" href="gallery-config.css?v=3">
   <link rel="stylesheet" href="julian.css?v=4">
-  <link rel="stylesheet" href="game3.css?v=4">
+  <link rel="stylesheet" href="game3.css?v=6">
 </head>
 <body>
   <div id="julian-gallery" class="gallery-viewport" hidden>
@@ -35,14 +35,16 @@
     <img id="julian-art-image" alt="">
   </div>
 
-  <div id="crisis-game3" class="crisis-game3" aria-hidden="true" tabindex="-1">
+  <div id="crisis-game3" class="crisis-game3" aria-hidden="true" tabindex="0" role="application" onclick="">
     <canvas id="crisis-game3-canvas" class="crisis-game3-canvas"></canvas>
+    <button type="button" class="crisis-game3-hit" aria-label="Throw briefcase"></button>
+    <div id="crisis-game3-fire" class="crisis-game3-fire" aria-hidden="true"></div>
   </div>
 
   <script src="site-access.js?v=3"></script>
   <script src="tracks.js"></script>
-  <script src="game3-config.js?v=8"></script>
-  <script src="game3.js?v=12"></script>
+  <script src="game3-config.js?v=9"></script>
+  <script src="game3.js?v=14"></script>
   <script>
     (function () {
       var art = document.getElementById('julian-artwork');

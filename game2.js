@@ -8,6 +8,7 @@
   const keys = new Set();
   const debugEnabled = new URLSearchParams(window.location.search).has('game2-debug');
   const deathFlash = document.getElementById('crisis-game2-fire');
+  const hit = root.querySelector('.crisis-game2-hit');
 
   const view = { scale: 1, ox: 0, oy: 0, dw: 0, dh: 0 };
   const sprites = { player: null, thrower: null, head: null, fireball: null, object: null, space: null };
@@ -869,11 +870,15 @@
   }
 
   function focusPlayfield() {
-    root.tabIndex = -1;
-    canvas.tabIndex = -1;
+    root.tabIndex = 0;
+    canvas.tabIndex = 0;
     const active = document.activeElement;
     if (active && active !== root && active !== canvas && active.blur) active.blur();
-    root.focus({ preventScroll: true });
+    try {
+      root.focus({ preventScroll: true });
+    } catch {
+      /* iOS may ignore programmatic focus */
+    }
   }
 
   function setWellIdle(on) {
@@ -918,58 +923,95 @@
         startMusic();
       }
     };
+    const touchOpts = { passive: false, capture: true };
     window.addEventListener('keydown', onKeyDown, true);
     window.addEventListener('keyup', onKeyUp, true);
     window.addEventListener('resize', onResize);
     if (window.visualViewport) window.visualViewport.addEventListener('resize', onResize);
     window.addEventListener('blur', onBlur);
     document.addEventListener('visibilitychange', onVisibility);
+    document.addEventListener('touchstart', onTouchStart, touchOpts);
+    document.addEventListener('touchmove', onTouchMove, touchOpts);
+    document.addEventListener('touchend', onTouchEnd, touchOpts);
+    document.addEventListener('touchcancel', onTouchEnd, touchOpts);
     root.addEventListener('pointerdown', onPointerDown, { passive: false });
     root.addEventListener('pointermove', onPointerMove, { passive: false });
     root.addEventListener('pointerup', onPointerUp, { passive: false });
     root.addEventListener('pointercancel', onPointerUp, { passive: false });
-    root.addEventListener('touchstart', onTouchGuard, { passive: false });
-    root.addEventListener('touchmove', onTouchGuard, { passive: false });
+    root.addEventListener('click', onClick);
+    canvas.addEventListener('click', onClick);
+    if (hit) hit.addEventListener('click', onClick);
     root.addEventListener('contextmenu', onContextMenu);
   }
+
+  let fromTouch = false;
+  let lastBeginAt = 0;
 
   function clearPointer() {
     pointer = null;
     pointerOrigin = null;
     pointerMoved = false;
+    fromTouch = false;
+  }
+
+  function inputClient(event) {
+    const touch = event.changedTouches && event.changedTouches[0];
+    if (touch) return { x: touch.clientX, y: touch.clientY };
+    return { x: event.clientX, y: event.clientY };
+  }
+
+  function beginAim(event, touch) {
+    if (!open || dead || reachedTop) return false;
+    const now = performance.now();
+    if (now - lastBeginAt < 24) return false;
+    lastBeginAt = now;
+    const pt = inputClient(event);
+    fromTouch = !!touch;
+    pointerOrigin = { x: pt.x, y: pt.y };
+    pointerMoved = false;
+    pointer = toWorld(pt.x, pt.y);
+    startMusic();
+    return true;
+  }
+
+  function moveAim(event) {
+    if (!pointerOrigin) return;
+    const pt = inputClient(event);
+    const slop = C.TOUCH_TAP_PX || 14;
+    if (Math.hypot(pt.x - pointerOrigin.x, pt.y - pointerOrigin.y) > slop) {
+      pointerMoved = true;
+    }
+    pointer = toWorld(pt.x, pt.y);
+  }
+
+  function endAim() {
+    if (pointerOrigin && !pointerMoved && !dead && !reachedTop) jumpPulse = true;
+    clearPointer();
   }
 
   function onPointerDown(event) {
     if (!open || dead || reachedTop) return;
+    if (fromTouch || event.pointerType === 'touch') return;
     if (event.pointerType === 'mouse' && event.button !== 0) return;
     if (event.cancelable) event.preventDefault();
-    startMusic();
-    focusPlayfield();
+    if (!beginAim(event, false)) return;
     try {
       root.setPointerCapture(event.pointerId);
     } catch {
       /* capture not required */
     }
-    pointerOrigin = { x: event.clientX, y: event.clientY };
-    pointerMoved = false;
-    pointer = toWorld(event.clientX, event.clientY);
   }
 
   function onPointerMove(event) {
-    if (!pointerOrigin) return;
+    if (!pointerOrigin || fromTouch || event.pointerType === 'touch') return;
     if (event.cancelable) event.preventDefault();
-    const slop = C.TOUCH_TAP_PX || 14;
-    if (Math.hypot(event.clientX - pointerOrigin.x, event.clientY - pointerOrigin.y) > slop) {
-      pointerMoved = true;
-    }
-    pointer = toWorld(event.clientX, event.clientY);
+    moveAim(event);
   }
 
   function onPointerUp(event) {
-    if (!pointerOrigin) return;
+    if (!pointerOrigin || fromTouch || event.pointerType === 'touch') return;
     if (event.cancelable) event.preventDefault();
-    if (!pointerMoved && !dead && !reachedTop) jumpPulse = true;
-    clearPointer();
+    endAim();
     try {
       if (root.hasPointerCapture(event.pointerId)) root.releasePointerCapture(event.pointerId);
     } catch {
@@ -977,9 +1019,31 @@
     }
   }
 
-  function onTouchGuard(event) {
+  function onTouchStart(event) {
     if (!open || dead || reachedTop) return;
     if (event.cancelable) event.preventDefault();
+    beginAim(event, true);
+  }
+
+  function onTouchMove(event) {
+    if (!open || !pointerOrigin) return;
+    if (event.cancelable) event.preventDefault();
+    moveAim(event);
+  }
+
+  function onTouchEnd(event) {
+    if (!open) return;
+    if (event.cancelable) event.preventDefault();
+    if (event.touches && event.touches.length) return;
+    endAim();
+  }
+
+  function onClick(event) {
+    if (!open || dead || reachedTop) return;
+    if (event.cancelable) event.preventDefault();
+    startMusic();
+    if (performance.now() - lastBeginAt < 500) return;
+    jumpPulse = true;
   }
 
   function onContextMenu(event) {
@@ -989,18 +1053,24 @@
 
   function unbindInput() {
     if (!onKeyDown) return;
+    const touchOpts = { capture: true };
     window.removeEventListener('keydown', onKeyDown, true);
     window.removeEventListener('keyup', onKeyUp, true);
     window.removeEventListener('resize', onResize);
     if (window.visualViewport) window.visualViewport.removeEventListener('resize', onResize);
     window.removeEventListener('blur', onBlur);
     document.removeEventListener('visibilitychange', onVisibility);
+    document.removeEventListener('touchstart', onTouchStart, touchOpts);
+    document.removeEventListener('touchmove', onTouchMove, touchOpts);
+    document.removeEventListener('touchend', onTouchEnd, touchOpts);
+    document.removeEventListener('touchcancel', onTouchEnd, touchOpts);
     root.removeEventListener('pointerdown', onPointerDown);
     root.removeEventListener('pointermove', onPointerMove);
     root.removeEventListener('pointerup', onPointerUp);
     root.removeEventListener('pointercancel', onPointerUp);
-    root.removeEventListener('touchstart', onTouchGuard);
-    root.removeEventListener('touchmove', onTouchGuard);
+    root.removeEventListener('click', onClick);
+    canvas.removeEventListener('click', onClick);
+    if (hit) hit.removeEventListener('click', onClick);
     root.removeEventListener('contextmenu', onContextMenu);
     onKeyDown = null;
     onKeyUp = null;
@@ -1017,6 +1087,8 @@
     open = true;
     root.classList.add('is-open');
     root.setAttribute('aria-hidden', 'false');
+    document.documentElement.classList.add('crisis-game2-open');
+    document.body.classList.add('crisis-game2-open');
     setWellIdle(true);
     bindInput();
     focusPlayfield();
@@ -1053,6 +1125,8 @@
     player = null;
     unbindInput();
     setWellIdle(false);
+    document.documentElement.classList.remove('crisis-game2-open');
+    document.body.classList.remove('crisis-game2-open');
     root.classList.remove('is-open');
     root.setAttribute('aria-hidden', 'true');
   }

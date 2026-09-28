@@ -5,9 +5,11 @@
   if (!C || !root || !canvas) return;
 
   const ctx = canvas.getContext('2d');
+  const hit = root.querySelector('.crisis-game3-hit');
+  const deathFlash = document.getElementById('crisis-game3-fire');
   const keys = new Set();
   const view = { scale: 1, ox: 0, oy: 0, dw: 0, dh: 0 };
-  const sprites = { bg: null, player: null, enemy: null, briefcase: null, cars: [] };
+  const sprites = { bg: null, player: null, enemy: null, briefcase: null, fireball: null, cars: [] };
 
   let open = false;
   let running = false;
@@ -19,6 +21,9 @@
   let winZoom = 0;
   let winSent = false;
   let lastShotAt = -9999;
+  let dead = false;
+  let death = null;
+  let deathTimer = 0;
   let player = null;
   let shot = null;
   let enemies = [];
@@ -137,6 +142,11 @@
         sprites.briefcase = punchAndCrop(img);
       })
     ];
+    if (C.FIREBALL_SRC) {
+      jobs.push(loadImage(C.FIREBALL_SRC).then((img) => {
+        sprites.fireball = punchAndCrop(img);
+      }));
+    }
     const uniqueCars = [...new Set((C.CARS || []).map((car) => car.src))];
     uniqueCars.forEach((src) => {
       jobs.push(loadImage(src).then((img) => {
@@ -283,6 +293,42 @@
     shot = null;
   }
 
+  function clearDeath() {
+    if (deathTimer) {
+      window.clearTimeout(deathTimer);
+      deathTimer = 0;
+    }
+    dead = false;
+    death = null;
+    if (deathFlash) deathFlash.classList.remove('is-flash');
+  }
+
+  function killPlayer() {
+    if (dead || complete || death) return;
+    dead = true;
+    death = player
+      ? {
+        x: player.x,
+        y: player.y - C.PLAYER_HEIGHT * 0.5,
+        h: C.PLAYER_HEIGHT
+      }
+      : null;
+    clearShot();
+    enemies = [];
+    keys.clear();
+    clearPointer();
+    if (deathFlash) {
+      deathFlash.classList.remove('is-flash');
+      void deathFlash.offsetWidth;
+      deathFlash.classList.add('is-flash');
+    }
+    deathTimer = window.setTimeout(() => {
+      deathTimer = 0;
+      if (!open) return;
+      resetRun();
+    }, C.DEATH_RESET_MS || 950);
+  }
+
   function clearComplete() {
     if (completeTimer) {
       window.clearTimeout(completeTimer);
@@ -296,6 +342,7 @@
   function resetRun() {
     clearComplete();
     clearShot();
+    clearDeath();
     lastShotAt = -9999;
     resetPlayer();
     buildCars();
@@ -304,7 +351,7 @@
   }
 
   function fireShot(now) {
-    if (complete || shot || !player) return;
+    if (dead || complete || shot || !player) return;
     if (now - lastShotAt < C.SHOT_COOLDOWN_MS) return;
     lastShotAt = now;
     shot = {
@@ -328,7 +375,7 @@
   }
 
   function finishGame() {
-    if (complete) return;
+    if (complete || dead) return;
     complete = true;
     clearShot();
     winZoom = 0;
@@ -380,7 +427,7 @@
   }
 
   function updatePlayer(dt, now) {
-    if (!player || complete) return;
+    if (!player || complete || dead) return;
     const left = keyHeld('arrowleft') || keyHeld('a')
       || (pointer && pointerMoved && pointer.x < player.x - (C.TOUCH_MOVE_PX || 16));
     const right = keyHeld('arrowright') || keyHeld('d')
@@ -397,7 +444,7 @@
   }
 
   function updateShot(dt) {
-    if (!shot) return;
+    if (dead || !shot) return;
     shot.y += shot.vy * dt;
     shot.angle += C.SHOT_SPIN * dt;
     if (shot.y < -20) {
@@ -425,7 +472,7 @@
   }
 
   function updateEnemies(dt) {
-    if (complete) return;
+    if (complete || dead) return;
     for (let i = 0; i < enemies.length; i += 1) {
       const enemy = enemies[i];
       const nextX = enemy.x + enemy.vx * dt;
@@ -436,13 +483,13 @@
   }
 
   function checkPlayerHit() {
-    if (!player || complete) return;
+    if (!player || complete || dead) return;
     const pBox = hurtBox(player.x, player.y, C.PLAYER_HEIGHT, sprites.player, C.PLAYER_HURT, false);
     for (let i = 0; i < enemies.length; i += 1) {
       const enemy = enemies[i];
       const eBox = hurtBox(enemy.x, enemy.y, C.ENEMY_HEIGHT, sprites.enemy, C.ENEMY_HURT, false);
       if (enemy.y >= C.PLAYER_DANGER_Y || boxesOverlap(eBox, pBox)) {
-        resetRun();
+        killPlayer();
         return;
       }
     }
@@ -511,15 +558,15 @@
       });
     }
 
-    if (player) {
-      if (complete) {
-        drawSprite(sprites.player, player.x, player.y - C.PLAYER_HEIGHT * 0.5, C.PLAYER_HEIGHT, {
-          center: true,
-          angle: player.spin || 0
-        });
-      } else {
-        drawSprite(sprites.player, player.x, player.y, C.PLAYER_HEIGHT, { flip: player.facing < 0 });
-      }
+    if (player && !dead && !complete) {
+      drawSprite(sprites.player, player.x, player.y, C.PLAYER_HEIGHT, { flip: player.facing < 0 });
+    } else if (complete && player) {
+      drawSprite(sprites.player, player.x, player.y - C.PLAYER_HEIGHT * 0.5, C.PLAYER_HEIGHT, {
+        center: true,
+        angle: player.spin || 0
+      });
+    } else if (death && sprites.fireball) {
+      drawSprite(sprites.fireball, death.x, death.y, death.h, { center: true });
     }
     ctx.restore();
   }
@@ -529,12 +576,12 @@
     const now = t;
     const dt = Math.min(0.05, (now - lastT) / 1000) || 0.016;
     lastT = now;
-    if (!complete) {
+    if (!complete && !dead) {
       updatePlayer(dt, now);
       updateShot(dt);
       updateEnemies(dt);
       checkPlayerHit();
-    } else {
+    } else if (complete) {
       updateWin(dt);
     }
     render();
@@ -550,11 +597,15 @@
   }
 
   function focusPlayfield() {
-    root.tabIndex = -1;
-    canvas.tabIndex = -1;
+    root.tabIndex = 0;
+    canvas.tabIndex = 0;
     const active = document.activeElement;
     if (active && active !== root && active !== canvas && active.blur) active.blur();
-    root.focus({ preventScroll: true });
+    try {
+      root.focus({ preventScroll: true });
+    } catch {
+      /* iOS may ignore programmatic focus */
+    }
   }
 
   function setPageIdle(on) {
@@ -566,41 +617,68 @@
     if (artwork) artwork.inert = !!on;
   }
 
+  let fromTouch = false;
+  let lastBeginAt = 0;
+
   function clearPointer() {
     pointer = null;
     pointerOrigin = null;
     pointerMoved = false;
+    fromTouch = false;
+  }
+
+  function inputClient(event) {
+    const touch = event.changedTouches && event.changedTouches[0];
+    if (touch) return { x: touch.clientX, y: touch.clientY };
+    return { x: event.clientX, y: event.clientY };
+  }
+
+  function beginAim(event, touch) {
+    if (!open || complete || dead) return false;
+    const now = performance.now();
+    if (now - lastBeginAt < 24) return false;
+    lastBeginAt = now;
+    const pt = inputClient(event);
+    fromTouch = !!touch;
+    pointerOrigin = { x: pt.x, y: pt.y };
+    pointerMoved = false;
+    pointer = toWorld(pt.x, pt.y);
+    startMusic();
+    fireShot(now);
+    return true;
+  }
+
+  function moveAim(event) {
+    if (!pointerOrigin) return;
+    const pt = inputClient(event);
+    const slop = C.TOUCH_TAP_PX || 14;
+    if (Math.hypot(pt.x - pointerOrigin.x, pt.y - pointerOrigin.y) > slop) {
+      pointerMoved = true;
+    }
+    pointer = toWorld(pt.x, pt.y);
   }
 
   function onPointerDown(event) {
-    if (!open || complete) return;
+    if (!open || complete || dead) return;
+    if (fromTouch || event.pointerType === 'touch') return;
     if (event.pointerType === 'mouse' && event.button !== 0) return;
     if (event.cancelable) event.preventDefault();
-    startMusic();
-    focusPlayfield();
+    if (!beginAim(event, false)) return;
     try {
       root.setPointerCapture(event.pointerId);
     } catch {
       /* capture not required */
     }
-    pointerOrigin = { x: event.clientX, y: event.clientY };
-    pointerMoved = false;
-    pointer = toWorld(event.clientX, event.clientY);
-    fireShot(performance.now());
   }
 
   function onPointerMove(event) {
-    if (!pointerOrigin) return;
+    if (!pointerOrigin || fromTouch || event.pointerType === 'touch') return;
     if (event.cancelable) event.preventDefault();
-    const slop = C.TOUCH_TAP_PX || 14;
-    if (Math.hypot(event.clientX - pointerOrigin.x, event.clientY - pointerOrigin.y) > slop) {
-      pointerMoved = true;
-    }
-    pointer = toWorld(event.clientX, event.clientY);
+    moveAim(event);
   }
 
   function onPointerUp(event) {
-    if (!pointerOrigin) return;
+    if (!pointerOrigin || fromTouch || event.pointerType === 'touch') return;
     if (event.cancelable) event.preventDefault();
     clearPointer();
     try {
@@ -610,9 +688,30 @@
     }
   }
 
-  function onTouchGuard(event) {
-    if (!open || complete) return;
+  function onTouchStart(event) {
+    if (!open || complete || dead) return;
     if (event.cancelable) event.preventDefault();
+    beginAim(event, true);
+  }
+
+  function onTouchMove(event) {
+    if (!open || !pointerOrigin) return;
+    if (event.cancelable) event.preventDefault();
+    moveAim(event);
+  }
+
+  function onTouchEnd(event) {
+    if (!open) return;
+    if (event.cancelable) event.preventDefault();
+    if (event.touches && event.touches.length) return;
+    clearPointer();
+  }
+
+  function onClick(event) {
+    if (!open || complete || dead) return;
+    if (event.cancelable) event.preventDefault();
+    startMusic();
+    fireShot(performance.now());
   }
 
   function onContextMenu(event) {
@@ -623,7 +722,7 @@
   function bindInput() {
     if (onKeyDown) return;
     onKeyDown = (event) => {
-      if (!open) return;
+      if (!open || dead) return;
       startMusic();
       const key = canonicalKey(event);
       if (!isGameKey(key)) return;
@@ -656,35 +755,47 @@
         startMusic();
       }
     };
+    const touchOpts = { passive: false, capture: true };
     window.addEventListener('keydown', onKeyDown, true);
     window.addEventListener('keyup', onKeyUp, true);
     window.addEventListener('resize', onResize);
     if (window.visualViewport) window.visualViewport.addEventListener('resize', onResize);
     window.addEventListener('blur', onBlur);
     document.addEventListener('visibilitychange', onVisibility);
+    document.addEventListener('touchstart', onTouchStart, touchOpts);
+    document.addEventListener('touchmove', onTouchMove, touchOpts);
+    document.addEventListener('touchend', onTouchEnd, touchOpts);
+    document.addEventListener('touchcancel', onTouchEnd, touchOpts);
     root.addEventListener('pointerdown', onPointerDown, { passive: false });
     root.addEventListener('pointermove', onPointerMove, { passive: false });
     root.addEventListener('pointerup', onPointerUp, { passive: false });
     root.addEventListener('pointercancel', onPointerUp, { passive: false });
-    root.addEventListener('touchstart', onTouchGuard, { passive: false });
-    root.addEventListener('touchmove', onTouchGuard, { passive: false });
+    root.addEventListener('click', onClick);
+    canvas.addEventListener('click', onClick);
+    if (hit) hit.addEventListener('click', onClick);
     root.addEventListener('contextmenu', onContextMenu);
   }
 
   function unbindInput() {
     if (!onKeyDown) return;
+    const touchOpts = { capture: true };
     window.removeEventListener('keydown', onKeyDown, true);
     window.removeEventListener('keyup', onKeyUp, true);
     window.removeEventListener('resize', onResize);
     if (window.visualViewport) window.visualViewport.removeEventListener('resize', onResize);
     window.removeEventListener('blur', onBlur);
     document.removeEventListener('visibilitychange', onVisibility);
+    document.removeEventListener('touchstart', onTouchStart, touchOpts);
+    document.removeEventListener('touchmove', onTouchMove, touchOpts);
+    document.removeEventListener('touchend', onTouchEnd, touchOpts);
+    document.removeEventListener('touchcancel', onTouchEnd, touchOpts);
     root.removeEventListener('pointerdown', onPointerDown);
     root.removeEventListener('pointermove', onPointerMove);
     root.removeEventListener('pointerup', onPointerUp);
     root.removeEventListener('pointercancel', onPointerUp);
-    root.removeEventListener('touchstart', onTouchGuard);
-    root.removeEventListener('touchmove', onTouchGuard);
+    root.removeEventListener('click', onClick);
+    canvas.removeEventListener('click', onClick);
+    if (hit) hit.removeEventListener('click', onClick);
     root.removeEventListener('contextmenu', onContextMenu);
     onKeyDown = null;
     onKeyUp = null;
@@ -700,6 +811,8 @@
     open = true;
     root.classList.add('is-open');
     root.setAttribute('aria-hidden', 'false');
+    document.documentElement.classList.add('crisis-game3-open');
+    document.body.classList.add('crisis-game3-open');
     setPageIdle(true);
     bindInput();
     focusPlayfield();
@@ -725,11 +838,14 @@
     stopLoop();
     clearComplete();
     clearShot();
+    clearDeath();
     enemies = [];
     cars = [];
     player = null;
     unbindInput();
     setPageIdle(false);
+    document.documentElement.classList.remove('crisis-game3-open');
+    document.body.classList.remove('crisis-game3-open');
     root.classList.remove('is-open');
     root.setAttribute('aria-hidden', 'true');
   }
@@ -750,6 +866,7 @@
         winZoom,
         enemyCount: enemies.length,
         hasShot: !!shot,
+        dead,
         keys: [...keys],
         player: player && { x: player.x, y: player.y }
       };

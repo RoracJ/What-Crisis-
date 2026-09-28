@@ -1,3 +1,10 @@
+html.crisis-game2-open,
+body.crisis-game2-open {
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
 .crisis-game2 {
   position: fixed;
   inset: 0;
@@ -5,9 +12,11 @@
   background: #000;
   overflow: hidden;
   touch-action: none;
+  cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
   isolation: isolate;
   visibility: hidden;
@@ -31,10 +40,29 @@
   display: block;
   background: #000;
   touch-action: none;
+  cursor: pointer;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+.crisis-game2-hit {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .crisis-game2-fire {

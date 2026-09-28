@@ -21,6 +21,7 @@ window.CrisisGame3Config = {
   PLAYER_SRC: 'assets/game/Headed.png',
   ENEMY_SRC: 'assets/game/Headless.png',
   BRIEFCASE_SRC: 'assets/game/Briefcase.png',
+  FIREBALL_SRC: 'assets/game/Fireball.png',
   SAUCER_SRC: 'assets/game/saucer.png',
   MUSIC_SRC: 'audio/Game.mp3',
 
@@ -49,6 +50,8 @@ window.CrisisGame3Config = {
   ENEMY_MARGIN: 28,
   ENEMY_HURT: { xFrac: 0.42, yFrac: 0.55, yBias: 0.08 },
   ENEMY_NUDGE: 6,
+
+  DEATH_RESET_MS: 950,
 
   COMPLETE_MS: 420,
   WIN_ZOOM_MS: 1300,
