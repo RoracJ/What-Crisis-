@@ -8,6 +8,7 @@
   const hit = root.querySelector('.crisis-game3-hit');
   const deathFlash = document.getElementById('crisis-game3-fire');
   const keys = new Set();
+  let horiz = 0;
   const view = { scale: 1, ox: 0, oy: 0, dw: 0, dh: 0 };
   const sprites = { bg: null, player: null, enemy: null, briefcase: null, fireball: null, cars: [] };
 
@@ -315,8 +316,6 @@
       : null;
     clearShot();
     enemies = [];
-    keys.clear();
-    clearPointer();
     if (deathFlash) {
       deathFlash.classList.remove('is-flash');
       void deathFlash.offsetWidth;
@@ -426,12 +425,47 @@
     return keys.has(name);
   }
 
+  function horizontalKey(key) {
+    if (key === 'arrowleft' || key === 'a') return -1;
+    if (key === 'arrowright' || key === 'd') return 1;
+    return 0;
+  }
+
+  function pressHoriz(key) {
+    const dir = horizontalKey(key);
+    if (dir) horiz = dir;
+  }
+
+  function syncHoriz() {
+    const left = keyHeld('arrowleft') || keyHeld('a');
+    const right = keyHeld('arrowright') || keyHeld('d');
+    if (left && right) return;
+    if (left) horiz = -1;
+    else if (right) horiz = 1;
+    else horiz = 0;
+  }
+
+  function clearKeys() {
+    keys.clear();
+    horiz = 0;
+  }
+
   function updatePlayer(dt, now) {
     if (!player || complete || dead) return;
-    const left = keyHeld('arrowleft') || keyHeld('a')
-      || (pointer && pointerMoved && pointer.x < player.x - (C.TOUCH_MOVE_PX || 16));
-    const right = keyHeld('arrowright') || keyHeld('d')
-      || (pointer && pointerMoved && pointer.x > player.x + (C.TOUCH_MOVE_PX || 16));
+    const movePx = C.TOUCH_MOVE_PX || 16;
+    const keyLeft = keyHeld('arrowleft') || keyHeld('a');
+    const keyRight = keyHeld('arrowright') || keyHeld('d');
+    let left = false;
+    let right = false;
+    if (keyLeft || keyRight) {
+      if (keyLeft && !keyRight) left = true;
+      else if (keyRight && !keyLeft) right = true;
+      else if (horiz < 0) left = true;
+      else right = true;
+    } else if (pointer && pointerMoved) {
+      left = pointer.x < player.x - movePx;
+      right = pointer.x > player.x + movePx;
+    }
     if (left && !right) {
       player.x -= C.PLAYER_SPEED * dt;
       player.facing = -1;
@@ -440,7 +474,8 @@
       player.facing = 1;
     }
     player.x = Math.max(22, Math.min(C.WORLD_W - 22, player.x));
-    if (keyHeld(' ') || pointer) fireShot(now);
+    if (keyHeld(' ')) fireShot(now);
+    else if (pointer && !keyLeft && !keyRight) fireShot(now);
   }
 
   function updateShot(dt) {
@@ -677,15 +712,27 @@
     moveAim(event);
   }
 
-  function onPointerUp(event) {
-    if (!pointerOrigin || fromTouch || event.pointerType === 'touch') return;
-    if (event.cancelable) event.preventDefault();
+  function releasePointer(event) {
+    if (event && event.cancelable) event.preventDefault();
+    const id = event && event.pointerId;
     clearPointer();
+    if (id == null) return;
     try {
-      if (root.hasPointerCapture(event.pointerId)) root.releasePointerCapture(event.pointerId);
+      if (root.hasPointerCapture(id)) root.releasePointerCapture(id);
     } catch {
       /* already released */
     }
+  }
+
+  function onPointerUp(event) {
+    if (!pointerOrigin) return;
+    releasePointer(event);
+  }
+
+  function onLostCapture(event) {
+    if (!pointerOrigin) return;
+    if (event && event.pointerId != null && root.hasPointerCapture(event.pointerId)) return;
+    clearPointer();
   }
 
   function onTouchStart(event) {
@@ -722,29 +769,33 @@
   function bindInput() {
     if (onKeyDown) return;
     onKeyDown = (event) => {
-      if (!open || dead) return;
-      startMusic();
+      if (!open) return;
       const key = canonicalKey(event);
       if (!isGameKey(key)) return;
       event.preventDefault();
       keys.add(key);
+      pressHoriz(key);
+      if (dead || complete) return;
+      startMusic();
       if (key === ' ') fireShot(performance.now());
     };
     onKeyUp = (event) => {
       keys.delete(canonicalKey(event));
+      syncHoriz();
     };
     onResize = () => {
       if (open) resize();
     };
     onBlur = () => {
-      keys.clear();
+      if (document.hasFocus()) return;
+      clearKeys();
       clearPointer();
     };
     onVisibility = () => {
       if (!open) return;
       if (document.visibilityState === 'hidden') {
         stopLoop();
-        keys.clear();
+        clearKeys();
         clearPointer();
         if (music) music.pause();
       } else if (!running) {
@@ -770,6 +821,7 @@
     root.addEventListener('pointermove', onPointerMove, { passive: false });
     root.addEventListener('pointerup', onPointerUp, { passive: false });
     root.addEventListener('pointercancel', onPointerUp, { passive: false });
+    root.addEventListener('lostpointercapture', onLostCapture);
     root.addEventListener('click', onClick);
     canvas.addEventListener('click', onClick);
     if (hit) hit.addEventListener('click', onClick);
@@ -793,6 +845,7 @@
     root.removeEventListener('pointermove', onPointerMove);
     root.removeEventListener('pointerup', onPointerUp);
     root.removeEventListener('pointercancel', onPointerUp);
+    root.removeEventListener('lostpointercapture', onLostCapture);
     root.removeEventListener('click', onClick);
     canvas.removeEventListener('click', onClick);
     if (hit) hit.removeEventListener('click', onClick);
@@ -802,7 +855,7 @@
     onResize = null;
     onVisibility = null;
     onBlur = null;
-    keys.clear();
+    clearKeys();
     clearPointer();
   }
 
