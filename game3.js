@@ -705,15 +705,13 @@
     const pt = inputClient(event);
     const touchLike = !!touch || event.pointerType === 'touch' || event.pointerType === 'pen';
     fromTouch = touchLike;
-    if (touchId != null) gestureTouchId = touchId;
-    else if (!touchLike) gestureTouchId = null;
+    gestureTouchId = touchId;
     if (event.pointerId != null) gesturePointerId = event.pointerId;
     pendingPointerId = null;
     if (touchLike) noteTouch(now);
     pointerOrigin = { x: pt.x, y: pt.y };
     pointer = toWorld(pt.x, pt.y);
-    const movePx = C.TOUCH_MOVE_PX || 16;
-    pointerMoved = !!(player && Math.abs(pointer.x - player.x) > movePx);
+    pointerMoved = false;
     startMusic();
     fireShot(now, true);
     return true;
@@ -736,6 +734,7 @@
     if (event.pointerType === 'mouse' && event.button !== 0) return;
     if (event.cancelable) event.preventDefault();
     if (!beginAim(event, touchLike)) return;
+    if (touchLike) return;
     try {
       root.setPointerCapture(event.pointerId);
     } catch {
@@ -801,14 +800,16 @@
     if (!open) return;
     if (event.cancelable) event.preventDefault();
     noteTouch(performance.now());
-    if (event.touches && event.touches.length) {
-      if (gestureTouchId == null) return;
+    const changedId = event.changedTouches && event.changedTouches[0]
+      ? event.changedTouches[0].identifier
+      : null;
+    if (gestureTouchId != null && changedId != null && changedId !== gestureTouchId) return;
+    if (event.touches) {
       for (let i = 0; i < event.touches.length; i += 1) {
-        if (event.touches[i].identifier === gestureTouchId) return;
+        if (gestureTouchId != null && event.touches[i].identifier === gestureTouchId) return;
       }
-    } else if (gesturePointerId != null && root.hasPointerCapture(gesturePointerId)) {
-      return;
     }
+    if (gestureTouchId == null && pointerOrigin && performance.now() - lastBeginAt < 80) return;
     clearPointer();
   }
 
@@ -880,6 +881,8 @@
     root.addEventListener('pointermove', onPointerMove, { passive: false });
     root.addEventListener('pointerup', onPointerUp, { passive: false });
     root.addEventListener('pointercancel', onPointerUp, { passive: false });
+    document.addEventListener('pointerup', onPointerUp, true);
+    document.addEventListener('pointercancel', onPointerUp, true);
     root.addEventListener('lostpointercapture', onLostCapture);
     root.addEventListener('click', onClick);
     canvas.addEventListener('click', onClick);
@@ -904,6 +907,8 @@
     root.removeEventListener('pointermove', onPointerMove);
     root.removeEventListener('pointerup', onPointerUp);
     root.removeEventListener('pointercancel', onPointerUp);
+    document.removeEventListener('pointerup', onPointerUp, true);
+    document.removeEventListener('pointercancel', onPointerUp, true);
     root.removeEventListener('lostpointercapture', onLostCapture);
     root.removeEventListener('click', onClick);
     canvas.removeEventListener('click', onClick);
