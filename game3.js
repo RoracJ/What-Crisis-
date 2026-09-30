@@ -26,7 +26,7 @@
   let death = null;
   let deathTimer = 0;
   let player = null;
-  let shot = null;
+  let shots = [];
   let enemies = [];
   let cars = [];
   let onKeyDown = null;
@@ -291,7 +291,7 @@
   }
 
   function clearShot() {
-    shot = null;
+    shots = [];
   }
 
   function clearDeath() {
@@ -349,16 +349,17 @@
     lastT = performance.now();
   }
 
-  function fireShot(now) {
-    if (dead || complete || shot || !player) return;
-    if (now - lastShotAt < C.SHOT_COOLDOWN_MS) return;
+  function fireShot(now, fresh) {
+    if (dead || complete || !player) return;
+    if (!fresh && shots.length) return;
+    if (now - lastShotAt < (C.SHOT_COOLDOWN_MS || 0)) return;
     lastShotAt = now;
-    shot = {
+    shots.push({
       x: player.x,
       y: player.y - C.PLAYER_HEIGHT * 0.62,
       vy: -C.SHOT_SPEED,
       angle: 0
-    };
+    });
   }
 
   function sendComplete() {
@@ -479,23 +480,27 @@
   }
 
   function updateShot(dt) {
-    if (dead || !shot) return;
-    shot.y += shot.vy * dt;
-    shot.angle += C.SHOT_SPIN * dt;
-    if (shot.y < -20) {
-      clearShot();
-      return;
-    }
-    const box = hurtBox(shot.x, shot.y, C.SHOT_HEIGHT, sprites.briefcase, C.SHOT_HURT, true);
-    for (let i = 0; i < enemies.length; i += 1) {
-      const enemy = enemies[i];
-      const eBox = hurtBox(enemy.x, enemy.y, C.ENEMY_HEIGHT, sprites.enemy, C.ENEMY_HURT, false);
-      if (boxesOverlap(box, eBox)) {
-        enemies.splice(i, 1);
-        clearShot();
-        if (enemies.length === 0) finishGame();
-        return;
+    if (dead || !shots.length) return;
+    for (let s = shots.length - 1; s >= 0; s -= 1) {
+      const shot = shots[s];
+      shot.y += shot.vy * dt;
+      shot.angle += C.SHOT_SPIN * dt;
+      if (shot.y < -20) {
+        shots.splice(s, 1);
+        continue;
       }
+      const box = hurtBox(shot.x, shot.y, C.SHOT_HEIGHT, sprites.briefcase, C.SHOT_HURT, true);
+      for (let i = 0; i < enemies.length; i += 1) {
+        const enemy = enemies[i];
+        const eBox = hurtBox(enemy.x, enemy.y, C.ENEMY_HEIGHT, sprites.enemy, C.ENEMY_HURT, false);
+        if (boxesOverlap(box, eBox)) {
+          enemies.splice(i, 1);
+          shots.splice(s, 1);
+          if (enemies.length === 0) finishGame();
+          break;
+        }
+      }
+      if (complete) return;
     }
   }
 
@@ -586,12 +591,12 @@
       drawSprite(sprites.enemy, enemy.x, enemy.y, C.ENEMY_HEIGHT, { flip: enemy.vx > 0 });
     });
 
-    if (shot) {
+    shots.forEach((shot) => {
       drawSprite(sprites.briefcase, shot.x, shot.y, C.SHOT_HEIGHT, {
         center: true,
         angle: shot.angle
       });
-    }
+    });
 
     if (player && !dead && !complete) {
       drawSprite(sprites.player, player.x, player.y, C.PLAYER_HEIGHT, { flip: player.facing < 0 });
@@ -654,12 +659,26 @@
 
   let fromTouch = false;
   let lastBeginAt = 0;
+  let gestureTouchId = null;
+  let gesturePointerId = null;
+  let pendingPointerId = null;
+  let suppressMouseUntil = 0;
 
   function clearPointer() {
     pointer = null;
     pointerOrigin = null;
     pointerMoved = false;
     fromTouch = false;
+    gestureTouchId = null;
+    gesturePointerId = null;
+  }
+
+  function noteTouch(now) {
+    suppressMouseUntil = now + 700;
+  }
+
+  function ignoreMouse() {
+    return performance.now() < suppressMouseUntil;
   }
 
   function inputClient(event) {
@@ -671,15 +690,32 @@
   function beginAim(event, touch) {
     if (!open || complete || dead) return false;
     const now = performance.now();
-    if (now - lastBeginAt < 24) return false;
+    const touchId = touch && event.changedTouches && event.changedTouches[0]
+      ? event.changedTouches[0].identifier
+      : null;
+    const sameGesture = pointerOrigin && (
+      (touchId != null && touchId === gestureTouchId)
+      || (!touch && event.pointerId != null && event.pointerId === gesturePointerId)
+    );
+    if (sameGesture && now - lastBeginAt < 24) return false;
     lastBeginAt = now;
     const pt = inputClient(event);
     fromTouch = !!touch;
+    if (touch) {
+      gestureTouchId = touchId;
+      if (pendingPointerId != null) gesturePointerId = pendingPointerId;
+      pendingPointerId = null;
+      noteTouch(now);
+    } else {
+      gestureTouchId = null;
+      gesturePointerId = event.pointerId;
+      pendingPointerId = null;
+    }
     pointerOrigin = { x: pt.x, y: pt.y };
     pointerMoved = false;
     pointer = toWorld(pt.x, pt.y);
     startMusic();
-    fireShot(now);
+    fireShot(now, true);
     return true;
   }
 
@@ -695,7 +731,11 @@
 
   function onPointerDown(event) {
     if (!open || complete || dead) return;
-    if (fromTouch || event.pointerType === 'touch') return;
+    if (event.pointerType === 'touch' || event.pointerType === 'pen') {
+      pendingPointerId = event.pointerId;
+      return;
+    }
+    if (fromTouch || ignoreMouse()) return;
     if (event.pointerType === 'mouse' && event.button !== 0) return;
     if (event.cancelable) event.preventDefault();
     if (!beginAim(event, false)) return;
@@ -725,12 +765,17 @@
   }
 
   function onPointerUp(event) {
+    if (event.pointerType === 'mouse' && ignoreMouse()) return;
     if (!pointerOrigin) return;
+    if (fromTouch && event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
+    if (gesturePointerId != null && event.pointerId !== gesturePointerId) return;
+    if (pendingPointerId != null && event.pointerId !== pendingPointerId) return;
     releasePointer(event);
   }
 
   function onLostCapture(event) {
-    if (!pointerOrigin) return;
+    if (!pointerOrigin || fromTouch) return;
+    if (gesturePointerId != null && event.pointerId !== gesturePointerId) return;
     if (event && event.pointerId != null && root.hasPointerCapture(event.pointerId)) return;
     clearPointer();
   }
@@ -750,13 +795,26 @@
   function onTouchEnd(event) {
     if (!open) return;
     if (event.cancelable) event.preventDefault();
-    if (event.touches && event.touches.length) return;
+    noteTouch(performance.now());
+    if (gestureTouchId != null && event.changedTouches) {
+      let ended = false;
+      for (let i = 0; i < event.changedTouches.length; i += 1) {
+        if (event.changedTouches[i].identifier === gestureTouchId) ended = true;
+      }
+      if (!ended) return;
+    }
+    if (event.touches) {
+      for (let i = 0; i < event.touches.length; i += 1) {
+        if (event.touches[i].identifier === gestureTouchId) return;
+      }
+    }
     clearPointer();
   }
 
   function onClick(event) {
     if (!open || complete || dead) return;
     if (event.cancelable) event.preventDefault();
+    if (ignoreMouse()) return;
     startMusic();
     fireShot(performance.now());
   }
@@ -918,7 +976,8 @@
         complete,
         winZoom,
         enemyCount: enemies.length,
-        hasShot: !!shot,
+        hasShot: shots.length > 0,
+        shotCount: shots.length,
         dead,
         keys: [...keys],
         player: player && { x: player.x, y: player.y }

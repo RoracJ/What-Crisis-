@@ -501,16 +501,38 @@
       const from = tierById(player.ladder.from);
       const to = tierById(player.ladder.to);
       player.x = player.ladder.x;
-      if (up) player.y -= C.CLIMB_SPEED * dt;
-      if (down) player.y += C.CLIMB_SPEED * dt;
+      const keyUp = keyHeld('arrowup') || keyHeld('w');
+      const keyDown = keyHeld('arrowdown') || keyHeld('s');
+      let climbUp = keyUp && !keyDown;
+      let climbDown = keyDown && !keyUp;
+      if (!climbUp && !climbDown && pointerSteer) {
+        const slop = 6;
+        if (pointer.y <= to.y + 10) climbUp = true;
+        else if (pointer.y >= from.y - 10) climbDown = true;
+        else if (pointer.y < player.y - slop) climbUp = true;
+        else if (pointer.y > player.y + slop) climbDown = true;
+      }
+      if (climbUp) player.y -= C.CLIMB_SPEED * dt;
+      else if (climbDown) player.y += C.CLIMB_SPEED * dt;
       if (player.y < to.y) player.y = to.y;
       if (player.y > from.y) player.y = from.y;
       if (left || right) player.facing = left ? -1 : 1;
 
-      if (player.y <= to.y + 0.5 && !down) {
+      const reach = 12;
+      const atTop = player.y <= to.y + reach;
+      const atBottom = player.y >= from.y - reach;
+      if (atTop && !climbDown) {
         landOn(to);
-      } else if (player.y >= from.y - 0.5 && !up) {
+      } else if (atBottom && !climbUp) {
         landOn(from);
+      } else if (jump || ((left || right) && !climbUp && !climbDown)) {
+        const dir = left && !right ? -1 : right && !left ? 1 : (player.facing || 1);
+        player.climbing = false;
+        player.ladder = null;
+        player.grounded = false;
+        player.tierId = null;
+        player.vy = jump ? -C.PLAYER_JUMP * 0.45 : 0;
+        player.x = Math.max(16, Math.min(C.WORLD_W - 16, player.x + dir * (C.CLIMB_RANGE + 6)));
       }
       return;
     }

@@ -63,9 +63,9 @@ window.CrisisGame3Config = {
   TOUCH_MOVE_PX: 16,
 
   CARS: [
-    { src: 'assets/game/saucer.png', x: 88, y: 78, h: 30 },
-    { src: 'assets/game/saucer.png', x: 240, y: 78, h: 30 },
-    { src: 'assets/game/saucer.png', x: 392, y: 78, h: 30 },
+    { src: 'assets/game/saucer.png', x: 88, y: 58, h: 30 },
+    { src: 'assets/game/saucer.png', x: 240, y: 58, h: 30 },
+    { src: 'assets/game/saucer.png', x: 392, y: 58, h: 30 },
     { src: 'assets/game/Car.png', x: 72, y: 348, h: 40 },
     { src: 'assets/game/Car1.png', x: 408, y: 348, h: 40 },
     { src: 'assets/game/Car2.png', x: 248, y: 448, h: 42 }

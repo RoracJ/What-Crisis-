@@ -119,6 +119,8 @@ body {
   z-index: 5;
   color: inherit;
   text-decoration: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .player-video {
@@ -152,7 +154,7 @@ body {
 .player-ui {
   position: absolute;
   inset: 0;
-  z-index: 3;
+  z-index: 6;
   pointer-events: none;
   display: flex;
   flex-direction: column;
@@ -186,8 +188,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
-  pointer-events: auto;
-  z-index: 4;
+  pointer-events: none;
+  z-index: 2;
+  touch-action: manipulation;
 }
 
 .nav-link {
@@ -198,6 +201,8 @@ body {
   text-decoration: none;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
   transition: color 0.2s;
+  pointer-events: auto;
+  touch-action: manipulation;
 }
 
 .nav-link:hover {
@@ -218,13 +223,17 @@ body {
 
 .track-list {
   list-style: none;
-  pointer-events: auto;
+  pointer-events: none;
+  position: relative;
+  z-index: 2;
   margin-bottom: 0.65rem;
-  max-width: 42%;
+  max-width: 36%;
+  touch-action: manipulation;
 }
 
 .track-item {
   margin-bottom: 0.35rem;
+  pointer-events: none;
 }
 
 .track-link {
@@ -238,6 +247,8 @@ body {
   cursor: pointer;
   text-align: left;
   transition: color 0.2s;
+  pointer-events: auto;
+  touch-action: manipulation;
 }
 
 .track-link:hover {
@@ -253,7 +264,10 @@ body {
 .player-controls {
   display: flex;
   gap: 0.5rem;
-  pointer-events: auto;
+  pointer-events: none;
+  position: relative;
+  z-index: 2;
+  touch-action: manipulation;
 }
 
 .ctrl-btn {
@@ -266,6 +280,8 @@ body {
   padding: 0.35rem 0.65rem;
   cursor: pointer;
   transition: border-color 0.2s, color 0.2s, background 0.2s;
+  pointer-events: auto;
+  touch-action: manipulation;
 }
 
 .ctrl-btn:hover {
@@ -367,7 +383,7 @@ body {
 
 @media (max-width: 640px) {
   .track-list {
-    max-width: 55%;
+    max-width: 36%;
   }
 
   .player-ui {

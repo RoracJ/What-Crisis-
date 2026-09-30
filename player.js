@@ -45,21 +45,39 @@
   }
 
   function loadVideo(track) {
-    video.pause();
-    configureTrackInteriorVideo(video, track);
-    muteInterior();
-    video.load();
-    muteInterior();
-    video.currentTime = 0;
-    return video.play().catch(() => {});
+    const next = getTrackInterior(track);
+    const current = video.getAttribute('src') || '';
+    if (current !== next) {
+      video.pause();
+      configureTrackInteriorVideo(video, track);
+      muteInterior();
+      video.load();
+    } else {
+      muteInterior();
+    }
+    const start = () => {
+      muteInterior();
+      const pending = video.play();
+      if (pending && typeof pending.catch === 'function') pending.catch(() => {});
+    };
+    if (video.readyState >= 2) {
+      try { video.currentTime = 0; } catch { /* not seekable yet */ }
+      start();
+      return;
+    }
+    video.addEventListener('loadeddata', function onReady() {
+      video.removeEventListener('loadeddata', onReady);
+      try { video.currentTime = 0; } catch { /* ignore */ }
+    });
+    start();
   }
 
   function loadTrack(index, autoplay = true) {
     if (!tracks.length) return;
 
     const i = ((index % tracks.length) + tracks.length) % tracks.length;
-    if (window.SiteAccess && !window.SiteAccess.canPlayTrack(i)) return;
     const track = tracks[i];
+    if (!track) return;
 
     loadVideo(track);
 
@@ -130,34 +148,23 @@
   btnPrev.addEventListener('click', prevTrack);
 
   function syncArtLink() {
-    if (!artLink || typeof tracks === 'undefined') return;
-    const track = currentIndex >= 0 ? tracks[currentIndex] : tracks[0];
-    const locked = window.SiteAccess && !window.SiteAccess.allows('artwork');
-    if (!track || locked) {
-      artLink.removeAttribute('href');
-      artLink.setAttribute('aria-disabled', 'true');
-      artLink.setAttribute('aria-label', 'Artwork locked');
-      return;
-    }
-    artLink.href = getArtworkUrl(track.id);
+    if (!artLink) return;
+    artLink.href = 'well.html';
     artLink.removeAttribute('aria-disabled');
-    artLink.setAttribute('aria-label', `Open ${track.title} in the art gallery`);
+    artLink.setAttribute('aria-label', 'Open mini-game');
+  }
+
+  function openMiniGame(event) {
+    if (event) event.preventDefault();
+    audio.pause();
+    video.pause();
+    isPlaying = false;
+    updatePlayButton();
+    window.location.assign('well.html');
   }
 
   if (artLink) {
-    if (window.parent !== window) {
-      artLink.setAttribute('target', '_parent');
-    }
-    artLink.addEventListener('click', (event) => {
-      if (!artLink.getAttribute('href')) {
-        event.preventDefault();
-        return;
-      }
-      audio.pause();
-      video.pause();
-      isPlaying = false;
-      updatePlayButton();
-    });
+    artLink.addEventListener('click', openMiniGame);
   }
 
   const homeLink = document.querySelector('.nav-link[href="index.html"]');
