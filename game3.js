@@ -351,8 +351,10 @@
 
   function fireShot(now, fresh) {
     if (dead || complete || !player) return;
-    if (!fresh && shots.length) return;
-    if (now - lastShotAt < (C.SHOT_COOLDOWN_MS || 0)) return;
+    if (!fresh) {
+      if (shots.length) return;
+      if (now - lastShotAt < (C.SHOT_COOLDOWN_MS || 0)) return;
+    }
     lastShotAt = now;
     shots.push({
       x: player.x,
@@ -671,6 +673,7 @@
     fromTouch = false;
     gestureTouchId = null;
     gesturePointerId = null;
+    pendingPointerId = null;
   }
 
   function noteTouch(now) {
@@ -700,20 +703,17 @@
     if (sameGesture && now - lastBeginAt < 24) return false;
     lastBeginAt = now;
     const pt = inputClient(event);
-    fromTouch = !!touch;
-    if (touch) {
-      gestureTouchId = touchId;
-      if (pendingPointerId != null) gesturePointerId = pendingPointerId;
-      pendingPointerId = null;
-      noteTouch(now);
-    } else {
-      gestureTouchId = null;
-      gesturePointerId = event.pointerId;
-      pendingPointerId = null;
-    }
+    const touchLike = !!touch || event.pointerType === 'touch' || event.pointerType === 'pen';
+    fromTouch = touchLike;
+    if (touchId != null) gestureTouchId = touchId;
+    else if (!touchLike) gestureTouchId = null;
+    if (event.pointerId != null) gesturePointerId = event.pointerId;
+    pendingPointerId = null;
+    if (touchLike) noteTouch(now);
     pointerOrigin = { x: pt.x, y: pt.y };
-    pointerMoved = false;
     pointer = toWorld(pt.x, pt.y);
+    const movePx = C.TOUCH_MOVE_PX || 16;
+    pointerMoved = !!(player && Math.abs(pointer.x - player.x) > movePx);
     startMusic();
     fireShot(now, true);
     return true;
@@ -731,14 +731,11 @@
 
   function onPointerDown(event) {
     if (!open || complete || dead) return;
-    if (event.pointerType === 'touch' || event.pointerType === 'pen') {
-      pendingPointerId = event.pointerId;
-      return;
-    }
-    if (fromTouch || ignoreMouse()) return;
+    const touchLike = event.pointerType === 'touch' || event.pointerType === 'pen';
+    if (!touchLike && (ignoreMouse() || fromTouch)) return;
     if (event.pointerType === 'mouse' && event.button !== 0) return;
     if (event.cancelable) event.preventDefault();
-    if (!beginAim(event, false)) return;
+    if (!beginAim(event, touchLike)) return;
     try {
       root.setPointerCapture(event.pointerId);
     } catch {
@@ -747,7 +744,9 @@
   }
 
   function onPointerMove(event) {
-    if (!pointerOrigin || fromTouch || event.pointerType === 'touch') return;
+    if (!pointerOrigin) return;
+    if (gesturePointerId != null && event.pointerId !== gesturePointerId) return;
+    if (event.pointerType === 'mouse' && (fromTouch || ignoreMouse())) return;
     if (event.cancelable) event.preventDefault();
     moveAim(event);
   }
@@ -766,10 +765,8 @@
 
   function onPointerUp(event) {
     if (event.pointerType === 'mouse' && ignoreMouse()) return;
-    if (!pointerOrigin) return;
-    if (fromTouch && event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
     if (gesturePointerId != null && event.pointerId !== gesturePointerId) return;
-    if (pendingPointerId != null && event.pointerId !== pendingPointerId) return;
+    if (!pointerOrigin) return;
     releasePointer(event);
   }
 
@@ -783,6 +780,14 @@
   function onTouchStart(event) {
     if (!open || complete || dead) return;
     if (event.cancelable) event.preventDefault();
+    const touchId = event.changedTouches && event.changedTouches[0]
+      ? event.changedTouches[0].identifier
+      : null;
+    if (pointerOrigin && performance.now() - lastBeginAt < 80) {
+      if (touchId != null) gestureTouchId = touchId;
+      noteTouch(performance.now());
+      return;
+    }
     beginAim(event, true);
   }
 
@@ -796,17 +801,13 @@
     if (!open) return;
     if (event.cancelable) event.preventDefault();
     noteTouch(performance.now());
-    if (gestureTouchId != null && event.changedTouches) {
-      let ended = false;
-      for (let i = 0; i < event.changedTouches.length; i += 1) {
-        if (event.changedTouches[i].identifier === gestureTouchId) ended = true;
-      }
-      if (!ended) return;
-    }
-    if (event.touches) {
+    if (event.touches && event.touches.length) {
+      if (gestureTouchId == null) return;
       for (let i = 0; i < event.touches.length; i += 1) {
         if (event.touches[i].identifier === gestureTouchId) return;
       }
+    } else if (gesturePointerId != null && root.hasPointerCapture(gesturePointerId)) {
+      return;
     }
     clearPointer();
   }

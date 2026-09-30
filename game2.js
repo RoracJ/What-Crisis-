@@ -968,12 +968,23 @@
 
   let fromTouch = false;
   let lastBeginAt = 0;
+  let gesturePointerId = null;
+  let suppressMouseUntil = 0;
 
   function clearPointer() {
     pointer = null;
     pointerOrigin = null;
     pointerMoved = false;
     fromTouch = false;
+    gesturePointerId = null;
+  }
+
+  function noteTouch(now) {
+    suppressMouseUntil = now + 400;
+  }
+
+  function ignoreMouse() {
+    return performance.now() < suppressMouseUntil;
   }
 
   function inputClient(event) {
@@ -985,13 +996,19 @@
   function beginAim(event, touch) {
     if (!open || dead || reachedTop) return false;
     const now = performance.now();
-    if (now - lastBeginAt < 24) return false;
+    if (pointerOrigin && now - lastBeginAt < 24) return false;
     lastBeginAt = now;
     const pt = inputClient(event);
-    fromTouch = !!touch;
+    const touchLike = !!touch || event.pointerType === 'touch' || event.pointerType === 'pen';
+    fromTouch = touchLike;
+    if (event.pointerId != null) gesturePointerId = event.pointerId;
+    if (touchLike) noteTouch(now);
     pointerOrigin = { x: pt.x, y: pt.y };
-    pointerMoved = false;
     pointer = toWorld(pt.x, pt.y);
+    const movePx = C.TOUCH_MOVE_PX || 16;
+    pointerMoved = !!(player && (
+      Math.abs(pointer.x - player.x) > movePx || Math.abs(pointer.y - player.y) > movePx
+    ));
     startMusic();
     return true;
   }
@@ -1013,10 +1030,11 @@
 
   function onPointerDown(event) {
     if (!open || dead || reachedTop) return;
-    if (fromTouch || event.pointerType === 'touch') return;
+    const touchLike = event.pointerType === 'touch' || event.pointerType === 'pen';
+    if (!touchLike && (ignoreMouse() || fromTouch)) return;
     if (event.pointerType === 'mouse' && event.button !== 0) return;
     if (event.cancelable) event.preventDefault();
-    if (!beginAim(event, false)) return;
+    if (!beginAim(event, touchLike)) return;
     try {
       root.setPointerCapture(event.pointerId);
     } catch {
@@ -1025,17 +1043,22 @@
   }
 
   function onPointerMove(event) {
-    if (!pointerOrigin || fromTouch || event.pointerType === 'touch') return;
+    if (!pointerOrigin) return;
+    if (gesturePointerId != null && event.pointerId !== gesturePointerId) return;
+    if (event.pointerType === 'mouse' && (fromTouch || ignoreMouse())) return;
     if (event.cancelable) event.preventDefault();
     moveAim(event);
   }
 
   function onPointerUp(event) {
-    if (!pointerOrigin || fromTouch || event.pointerType === 'touch') return;
+    if (event.pointerType === 'mouse' && (fromTouch || ignoreMouse())) return;
+    if (gesturePointerId != null && event.pointerId !== gesturePointerId) return;
+    if (!pointerOrigin) return;
     if (event.cancelable) event.preventDefault();
+    const id = event.pointerId;
     endAim();
     try {
-      if (root.hasPointerCapture(event.pointerId)) root.releasePointerCapture(event.pointerId);
+      if (id != null && root.hasPointerCapture(id)) root.releasePointerCapture(id);
     } catch {
       /* already released */
     }
@@ -1044,6 +1067,8 @@
   function onTouchStart(event) {
     if (!open || dead || reachedTop) return;
     if (event.cancelable) event.preventDefault();
+    noteTouch(performance.now());
+    if (pointerOrigin && performance.now() - lastBeginAt < 80) return;
     beginAim(event, true);
   }
 
@@ -1056,7 +1081,9 @@
   function onTouchEnd(event) {
     if (!open) return;
     if (event.cancelable) event.preventDefault();
+    noteTouch(performance.now());
     if (event.touches && event.touches.length) return;
+    if (gesturePointerId != null && root.hasPointerCapture(gesturePointerId)) return;
     endAim();
   }
 
