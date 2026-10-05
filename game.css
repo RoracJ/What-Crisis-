@@ -59,7 +59,7 @@ body.game-debug .game-trigger {
   inset: 0;
   z-index: 6;
   background:
-    url("assets/game/Fire.png") center center / cover no-repeat,
+    url("assets/game/web/Fire.png") center center / cover no-repeat,
     radial-gradient(circle at center, rgba(232, 64, 32, 0.85) 0%, rgba(90, 8, 0, 0.55) 55%, rgba(0, 0, 0, 0.2) 100%);
   mix-blend-mode: screen;
   opacity: 0;
@@ -332,9 +332,21 @@ body.game-debug .game-trigger {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: max(100%, 44px);
-    height: max(100%, 44px);
+    width: max(100%, 56px);
+    height: max(100%, 56px);
     transform: translate(-50%, -50%);
+  }
+
+  .lab-port.is-on {
+    pointer-events: auto;
+    cursor: pointer;
+  }
+
+  .lab-port.is-on::after {
+    content: '';
+    position: absolute;
+    inset: -18%;
+    border-radius: 50%;
   }
 }
 

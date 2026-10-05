@@ -5,26 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no">
   <title>What Crisis?</title>
   <link rel="stylesheet" href="gallery-config.css?v=3">
-  <link rel="stylesheet" href="julian.css?v=4">
-  <link rel="stylesheet" href="game3.css?v=6">
+  <link rel="stylesheet" href="julian.css?v=5">
+  <link rel="stylesheet" href="game3.css?v=7">
+  <!-- Tiny Object-circle loops — start the first ring before JS builds portals. -->
+  <link rel="preload" as="video" href="video/web/portal/track-one.mp4" type="video/mp4">
+  <link rel="preload" as="video" href="video/web/portal/track-two.mp4" type="video/mp4">
+  <link rel="preload" as="video" href="video/web/portal/track-three.mp4" type="video/mp4">
+  <link rel="preload" as="video" href="video/web/portal/track-four.mp4" type="video/mp4">
+  <link rel="preload" as="image" href="assets/web/Gallery.jpg">
 </head>
 <body>
   <div id="julian-gallery" class="gallery-viewport" hidden>
     <div class="gallery-stage">
       <img
         class="gallery-background"
-        src="assets/Gallery.png"
+        src="assets/web/Gallery.jpg"
         alt=""
-        width="1254"
-        height="1254"
+        width="900"
+        height="900"
         decoding="async"
+        fetchpriority="high"
       />
 
       <img
         class="gallery-logo"
-        src="assets/game/Logo.png"
+        src="assets/game/web/Logo.png"
         alt=""
         draggable="false"
+        decoding="async"
       />
 
       <div class="gallery-portals" id="gallery-portals" aria-label="Object terminals"></div>
@@ -42,9 +50,9 @@
   </div>
 
   <script src="site-access.js?v=3"></script>
-  <script src="tracks.js"></script>
-  <script src="game3-config.js?v=10"></script>
-  <script src="game3.js?v=21"></script>
+  <script src="tracks.js?v=5"></script>
+  <script src="game3-config.js?v=12"></script>
+  <script src="game3.js?v=22"></script>
   <script>
     (function () {
       var art = document.getElementById('julian-artwork');
@@ -65,6 +73,6 @@
       if (img) img.addEventListener('click', enterFromArt, true);
     })();
   </script>
-  <script src="julian.js?v=9"></script>
+  <script src="julian.js?v=12"></script>
 </body>
 </html>

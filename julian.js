@@ -15,7 +15,7 @@
   const debugEnabled = params.has('gallery-debug');
   const galleryAudio = new Audio(GALLERY_AUDIO_SRC);
   galleryAudio.loop = true;
-  galleryAudio.preload = 'auto';
+  galleryAudio.preload = 'none';
   galleryAudio.setAttribute('data-gallery-music', '');
   galleryAudio.hidden = true;
   document.body.appendChild(galleryAudio);
@@ -30,6 +30,7 @@
   }
 
   function startGalleryAudio() {
+    galleryAudio.preload = 'auto';
     galleryAudio.play().catch(() => {});
   }
 
@@ -52,6 +53,7 @@
     if (reducedMotion.matches) return;
     portalFilms.forEach((film) => {
       if (!film.isConnected) return;
+      if (!film.getAttribute('src') && !film.currentSrc) return;
       film.play().catch(() => {});
     });
   }
@@ -129,24 +131,50 @@
     document.body.style.overflow = 'hidden';
   }
 
-  function buildPortalFilm(track) {
+  function buildPortalFilm(track, index) {
     const film = document.createElement('video');
     film.className = 'gallery-portal-film';
+    /*
+     * Portal copies are tiny (~700KB for all 8). Start every Object
+     * immediately so the gallery landing page fills in fast.
+     */
+    const src = typeof getTrackGalleryInterior === 'function'
+      ? getTrackGalleryInterior(track)
+      : (track.galleryVideo || track.video);
+    film.muted = true;
+    film.defaultMuted = true;
+    film.setAttribute('muted', '');
+    film.volume = 0;
+    film.loop = true;
+    film.playsInline = true;
+    film.setAttribute('playsinline', '');
+    film.setAttribute('webkit-playsinline', '');
+    film.autoplay = true;
+    film.controls = false;
+    film.disablePictureInPicture = true;
+    film.setAttribute('disablepictureinpicture', '');
+    /* First four auto; rest metadata so the network stays responsive. */
+    const preload = index < 4 ? 'auto' : 'metadata';
+    film.preload = preload;
     if (typeof configureTrackInteriorVideo === 'function') {
-      configureTrackInteriorVideo(film, track);
+      configureTrackInteriorVideo(film, track, { preload, gallery: true, src });
     } else {
-      film.muted = true;
-      film.setAttribute('muted', '');
-      film.loop = true;
-      film.playsInline = true;
-      film.setAttribute('playsinline', '');
-      film.setAttribute('webkit-playsinline', '');
-      film.autoplay = true;
-      film.preload = 'auto';
-      film.controls = false;
-      film.src = typeof getTrackInterior === 'function' ? getTrackInterior(track) : track.video;
+      film.src = src;
     }
     return film;
+  }
+
+  function warmRemainingPortalFilms() {
+    /* Promote later films to full download shortly after first paint. */
+    portalFilms.forEach((film, index) => {
+      if (index < 4) return;
+      window.setTimeout(() => {
+        if (!galleryActive || !film.isConnected) return;
+        if (film.preload === 'auto') return;
+        film.preload = 'auto';
+        if (!reducedMotion.matches) film.play().catch(() => {});
+      }, 120 + index * 90);
+    });
   }
 
   function showGallery() {
@@ -175,7 +203,7 @@
       const filmInner = document.createElement('div');
       filmInner.className = 'gallery-portal-film-inner';
 
-      const film = buildPortalFilm(track);
+      const film = buildPortalFilm(track, index);
       filmInner.append(film);
 
       const shell = document.createElement('img');
@@ -196,6 +224,7 @@
     });
 
     startGalleryScene();
+    warmRemainingPortalFilms();
 
     if (debugEnabled) initGalleryDebug(stage);
   }

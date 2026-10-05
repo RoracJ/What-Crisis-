@@ -1,11 +1,12 @@
 (() => {
-  const ASSET = (name) => `assets/game/${name}`;
+  /* Phone-first delivery copies; masters stay under assets/game/. */
+  const ASSET = (name) => `assets/game/web/${name}`;
   const WORLD_W = 1536;
   const WORLD_H = 1024;
   const FILES = {
-    Background: 'Background.png',
-    Headed: 'Headed.png',
-    Headless: 'Headless.png',
+    Background: 'Background.jpg',
+    Headed: 'Headed.jpg',
+    Headless: 'Headless.jpg',
     Car: 'Car.png',
     Car1: 'Car1.png',
     Car2: 'Car2.png',
@@ -159,11 +160,12 @@
 
   function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.floor(window.innerWidth * dpr);
-    canvas.height = Math.floor(window.innerHeight * dpr);
+    const rect = canvas.getBoundingClientRect();
+    const cw = Math.max(1, Math.round(rect.width));
+    const ch = Math.max(1, Math.round(rect.height));
+    canvas.width = Math.floor(cw * dpr);
+    canvas.height = Math.floor(ch * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const cw = window.innerWidth;
-    const ch = window.innerHeight;
     const scale = Math.min(cw / WORLD_W, ch / WORLD_H);
     view.scale = scale;
     view.dw = WORLD_W * scale;
@@ -180,9 +182,10 @@
   }
 
   function toWorld(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
     return {
-      x: (clientX - view.ox) / view.dw,
-      y: (clientY - view.oy) / view.dh
+      x: (clientX - rect.left - view.ox) / view.dw,
+      y: (clientY - rect.top - view.oy) / view.dh
     };
   }
 
@@ -603,7 +606,7 @@
     requestAnimationFrame(loop);
   }
 
-  const LAB_VIDEO_SRC = 'videos/portal.mov?v=2';
+  const LAB_VIDEO_SRC = 'videos/web/portal.mp4';
 
   function unloadLabVideo() {
     if (!labVideo) return;
@@ -653,6 +656,26 @@
       labVideo.classList.add('is-on');
       playLabVideo();
     }
+    warmGalleryLanding();
+  }
+
+  /* Next stop after Lab-On is the star gallery — prefetch its tiny portal loops. */
+  function warmGalleryLanding() {
+    if (document.querySelector('link[data-wc-gallery-warm]')) return;
+    const hrefs = [
+      'assets/web/Gallery.jpg',
+      'video/web/portal/track-one.mp4',
+      'video/web/portal/track-two.mp4',
+      'video/web/portal/track-three.mp4',
+      'video/web/portal/track-four.mp4'
+    ];
+    hrefs.forEach((href) => {
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.href = href;
+      link.setAttribute('data-wc-gallery-warm', '');
+      document.head.appendChild(link);
+    });
   }
 
   function enterLab() {
@@ -681,10 +704,49 @@
     if (ambient) ambient.play('home');
   }
 
-  function openGame() {
-    if (window.SiteAccess && !window.SiteAccess.allows('game')) return;
+  function hydrateGameImages() {
+    root.querySelectorAll('img[data-src]').forEach((img) => {
+      if (img.getAttribute('src')) return;
+      img.src = img.getAttribute('data-src');
+      img.removeAttribute('data-src');
+    });
+  }
+
+  let spriteLoad = null;
+
+  function ensureSprites() {
+    if (assetsReady) return Promise.resolve();
+    if (!spriteLoad) {
+      spriteLoad = loadSprites()
+        .then(() => { assetsReady = true; })
+        .catch((err) => {
+          spriteLoad = null;
+          throw err;
+        });
+    }
+    return spriteLoad;
+  }
+
+  function canPlayGame() {
+    return !window.SiteAccess || window.SiteAccess.allows('game');
+  }
+
+  function warmGameAssets() {
+    if (!canPlayGame()) return;
+    ensureSprites().catch(() => {});
+    if (ambient) ambient.warm('street');
+  }
+
+  async function openGame() {
+    if (!canPlayGame()) return;
     if (open) return;
-    if (!assetsReady) return;
+    hydrateGameImages();
+    try {
+      await ensureSprites();
+    } catch {
+      return;
+    }
+    if (!assetsReady || open) return;
     open = true;
     inLab = false;
     root.classList.add('is-open');
@@ -703,6 +765,11 @@
     if (new URLSearchParams(window.location.search).has('lab')) enterLab();
   }
 
+  trigger.addEventListener('pointerdown', () => {
+    if (ambient) ambient.unlock();
+    warmGameAssets();
+  });
+
   trigger.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -710,9 +777,19 @@
     openGame();
   });
 
+  /* Unlocked visitors: warm street sprites on first real gesture only. */
+  if (canPlayGame()) {
+    window.addEventListener('pointerdown', warmGameAssets, { once: true });
+  }
+
   window.addEventListener('resize', () => {
     if (open) resize();
   });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      if (open) resize();
+    });
+  }
 
   window.addEventListener('keydown', (event) => {
     if (!open) return;
@@ -778,19 +855,25 @@
     });
   }
 
+  function enterGalleryFromLab(event) {
+    if (event) event.stopPropagation();
+    if (!inLab || !labOn) return;
+    if (window.SiteAccess && !window.SiteAccess.allows('gallery')) return;
+    if (ambient) ambient.silencePage();
+    window.location.href = 'julian.html';
+  }
+
   if (labVideo) {
     labVideo.addEventListener('pause', () => {
       if (!labOn || reducedMotion.matches) return;
       if (document.visibilityState !== 'visible') return;
       labVideo.play().catch(() => {});
     });
-    labVideo.addEventListener('click', (event) => {
-      event.stopPropagation();
-      if (!inLab || !labOn) return;
-      if (window.SiteAccess && !window.SiteAccess.allows('gallery')) return;
-      if (ambient) ambient.silencePage();
-      window.location.href = 'julian.html';
-    });
+    labVideo.addEventListener('click', enterGalleryFromLab);
+  }
+
+  if (labPort) {
+    labPort.addEventListener('click', enterGalleryFromLab);
   }
 
   document.addEventListener('visibilitychange', () => {
@@ -805,8 +888,4 @@
   window.addEventListener('pagehide', () => {
     if (labVideo) labVideo.pause();
   });
-
-  loadSprites()
-    .then(() => { assetsReady = true; })
-    .catch(() => {});
 })();

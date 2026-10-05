@@ -10,7 +10,8 @@
  *   portal   — Object / stone outline image
  *   artwork  — full Julian drawing shown on the black artwork page
  *
- * `video` is the player + gallery Object interior loop.
+ * `video`        — player interior (larger display)
+ * `galleryVideo` — tiny Object-circle loop on the gallery landing page
  */
 
 const tracks = [
@@ -18,64 +19,72 @@ const tracks = [
     id: 'track-one',
     title: 'Track One',
     audio: 'audio/track-one.m4a',
-    video: 'video/track-one.mov',
-    portal: 'assets/game/Object.png',
+    video: 'video/web/track-one.mp4',
+    galleryVideo: 'video/web/portal/track-one.mp4',
+    portal: 'assets/game/web/Object.png',
     artwork: 'assets/artwork/track-one.jpg'
   },
   {
     id: 'track-two',
     title: 'Track Two',
     audio: 'audio/track-two.m4a',
-    video: 'video/track-two.mov',
-    portal: 'assets/game/Object.png',
+    video: 'video/web/track-two.mp4',
+    galleryVideo: 'video/web/portal/track-two.mp4',
+    portal: 'assets/game/web/Object.png',
     artwork: 'assets/artwork/track-two.jpg'
   },
   {
     id: 'track-three',
     title: 'Track Three',
     audio: 'audio/track-three.m4a',
-    video: 'video/track-three.mov',
-    portal: 'assets/game/Object.png',
+    video: 'video/web/track-three.mp4',
+    galleryVideo: 'video/web/portal/track-three.mp4',
+    portal: 'assets/game/web/Object.png',
     artwork: 'assets/artwork/track-three.jpg'
   },
   {
     id: 'track-four',
     title: 'Track Four',
     audio: 'audio/track-four.m4a',
-    video: 'video/track-four.mov',
-    portal: 'assets/game/Object.png',
+    video: 'video/web/track-four.mp4',
+    galleryVideo: 'video/web/portal/track-four.mp4',
+    portal: 'assets/game/web/Object.png',
     artwork: 'assets/artwork/track-four.jpg'
   },
   {
     id: 'track-five',
     title: 'Track Five',
     audio: 'audio/track-five.m4a',
-    video: 'video/track-five.mov',
-    portal: 'assets/game/Object.png',
+    video: 'video/web/track-five.mp4',
+    galleryVideo: 'video/web/portal/track-five.mp4',
+    portal: 'assets/game/web/Object.png',
     artwork: 'assets/artwork/track-five.jpg'
   },
   {
     id: 'track-six',
     title: 'Track Six',
     audio: 'audio/track-six.m4a',
-    video: 'video/track-six.mov',
-    portal: 'assets/game/Object.png',
+    video: 'video/web/track-six.mp4',
+    galleryVideo: 'video/web/portal/track-six.mp4',
+    portal: 'assets/game/web/Object.png',
     artwork: 'assets/artwork/track-six.jpg'
   },
   {
     id: 'track-seven',
     title: 'Track Seven',
     audio: 'audio/track-seven.mp3',
-    video: 'video/track-seven.mov',
-    portal: 'assets/game/Object.png',
+    video: 'video/web/track-seven.mp4',
+    galleryVideo: 'video/web/portal/track-seven.mp4',
+    portal: 'assets/game/web/Object.png',
     artwork: 'assets/artwork/track-seven.jpg'
   },
   {
     id: 'track-eight',
     title: 'Track Eight',
     audio: 'audio/track-eight.mp3',
-    video: 'video/track-eight.mov',
-    portal: 'assets/game/Object.png',
+    video: 'video/web/track-eight.mp4',
+    galleryVideo: 'video/web/portal/track-eight.mp4',
+    portal: 'assets/game/web/Object.png',
     artwork: 'assets/artwork/track-eight.jpg'
   }
 ];
@@ -96,7 +105,12 @@ function getTrackById(id) {
 }
 
 function getTrackInterior(track) {
-  return (track && (track.video || track.interior)) || 'videos/portal.mov?v=2';
+  return (track && (track.video || track.interior)) || 'videos/web/portal.mp4';
+}
+
+/** Tiny Object-circle loops for the gallery landing page. */
+function getTrackGalleryInterior(track) {
+  return (track && (track.galleryVideo || track.video || track.interior)) || 'videos/web/portal.mp4';
 }
 
 function getTrackAudio(track) {
@@ -104,7 +118,7 @@ function getTrackAudio(track) {
 }
 
 /** Shared player + gallery interior video setup (muted loop, no controls). */
-function configureTrackInteriorVideo(video, track) {
+function configureTrackInteriorVideo(video, track, options = {}) {
   if (!video || !track) return video;
   video.muted = true;
   video.defaultMuted = true;
@@ -114,12 +128,14 @@ function configureTrackInteriorVideo(video, track) {
   video.playsInline = true;
   video.setAttribute('playsinline', '');
   video.setAttribute('webkit-playsinline', '');
-  video.autoplay = true;
-  video.preload = 'auto';
+  video.autoplay = options.autoplay !== false;
+  video.preload = options.preload || 'metadata';
   video.controls = false;
   video.disablePictureInPicture = true;
   video.setAttribute('disablepictureinpicture', '');
-  video.src = getTrackInterior(track);
+  const src = options.src
+    || (options.gallery ? getTrackGalleryInterior(track) : getTrackInterior(track));
+  video.src = src;
   return video;
 }
 

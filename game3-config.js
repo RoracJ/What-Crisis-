@@ -14,15 +14,15 @@ window.CrisisGame3Config = {
   WORLD_W: 480,
   WORLD_H: 640,
 
-  BG_SRC: 'assets/game/Background.png',
+  BG_SRC: 'assets/game/web/Background.jpg',
   BG_FOCUS_X: 0.50,
   BG_FOCUS_Y: 0.66,
   BG_ZOOM: 1.48,
-  PLAYER_SRC: 'assets/game/Headed.png',
-  ENEMY_SRC: 'assets/game/Headless.png',
-  BRIEFCASE_SRC: 'assets/game/Briefcase.png',
-  FIREBALL_SRC: 'assets/game/Fireball.png',
-  SAUCER_SRC: 'assets/game/saucer.png',
+  PLAYER_SRC: 'assets/game/web/Headed.jpg',
+  ENEMY_SRC: 'assets/game/web/Headless.jpg',
+  BRIEFCASE_SRC: 'assets/game/web/Briefcase.png',
+  FIREBALL_SRC: 'assets/game/web/Fireball.png',
+  SAUCER_SRC: 'assets/game/web/saucer.png',
   MUSIC_SRC: 'audio/Game.mp3',
 
   PLAYER_SPEED: 148,
@@ -59,15 +59,15 @@ window.CrisisGame3Config = {
   WIN_ZOOM_SCALE: 5.2,
   WIN_SPIN: 16,
 
-  TOUCH_TAP_PX: 14,
-  TOUCH_MOVE_PX: 16,
+  TOUCH_TAP_PX: 18,
+  TOUCH_MOVE_PX: 20,
 
   CARS: [
-    { src: 'assets/game/saucer.png', x: 88, y: 58, h: 30 },
-    { src: 'assets/game/saucer.png', x: 240, y: 58, h: 30 },
-    { src: 'assets/game/saucer.png', x: 392, y: 58, h: 30 },
-    { src: 'assets/game/Car.png', x: 72, y: 348, h: 40 },
-    { src: 'assets/game/Car1.png', x: 408, y: 348, h: 40 },
-    { src: 'assets/game/Car2.png', x: 248, y: 448, h: 42 }
+    { src: 'assets/game/web/saucer.png', x: 88, y: 58, h: 30 },
+    { src: 'assets/game/web/saucer.png', x: 240, y: 58, h: 30 },
+    { src: 'assets/game/web/saucer.png', x: 392, y: 58, h: 30 },
+    { src: 'assets/game/web/Car.png', x: 72, y: 348, h: 40 },
+    { src: 'assets/game/web/Car1.png', x: 408, y: 348, h: 40 },
+    { src: 'assets/game/web/Car2.png', x: 248, y: 448, h: 42 }
   ]
 };

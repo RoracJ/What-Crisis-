@@ -9,8 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="portal-config.css?v=3">
   <link rel="stylesheet" href="game-config.css">
-  <link rel="stylesheet" href="styles.css?v=9">
-  <link rel="stylesheet" href="game.css?v=9">
+  <link rel="stylesheet" href="styles.css?v=11">
+  <link rel="stylesheet" href="game.css?v=11">
 </head>
 <body>
   <div class="noise" aria-hidden="true"></div>
@@ -34,8 +34,8 @@
           muted
           loop
           playsinline
-          preload="auto"
-          src="videos/portal.mov?v=2"
+          preload="metadata"
+          src="videos/web/portal.mp4"
         ></video>
       </div>
 
@@ -53,18 +53,18 @@
     <div id="crisis-death-cards" class="crisis-death-cards" aria-hidden="true">
       <img
         class="crisis-death-card crisis-death-card-a"
-        src="assets/game/80992891369__BA3DA959-0F0E-4A81-AC6F-A8A56352DB5E.jpg"
+        data-src="assets/game/web/death-card.jpg"
         alt=""
-        width="2365"
-        height="3219"
+        width="1200"
+        height="1634"
         draggable="false"
       />
       <img
         class="crisis-death-card crisis-death-card-b"
-        src="assets/well-final.jpg"
+        data-src="assets/game/web/well-final.jpg"
         alt=""
-        width="1258"
-        height="950"
+        width="1200"
+        height="906"
         draggable="false"
       />
     </div>
@@ -97,12 +97,12 @@
             preload="none"
           ></video>
         </div>
-        <img class="lab-panel" src="assets/game/Lab.png" alt="" draggable="false">
-        <img class="lab-logo" src="assets/game/Logo.png" alt="" draggable="false">
-        <img id="lab-light" class="lab-light" src="assets/game/Light.png" alt="" hidden>
-        <img id="lab-gauge" class="lab-gauge" src="assets/game/Gauge.png" alt="">
+        <img class="lab-panel" data-src="assets/game/web/Lab.png" alt="" draggable="false">
+        <img class="lab-logo" data-src="assets/game/web/Logo.png" alt="" draggable="false">
+        <img id="lab-light" class="lab-light" data-src="assets/game/web/Light.png" alt="" hidden>
+        <img id="lab-gauge" class="lab-gauge" data-src="assets/game/web/Gauge.png" alt="">
         <button type="button" id="lab-knob" class="lab-knob" aria-label="Machine control">
-          <img src="assets/game/Knob.png" alt="">
+          <img data-src="assets/game/web/Knob.png" alt="">
         </button>
       </div>
     </div>
@@ -118,8 +118,8 @@
   </div>
 
   <script src="site-access.js?v=3"></script>
-  <script src="ambient.js"></script>
-  <script src="script.js?v=7"></script>
-  <script src="game.js?v=9"></script>
+  <script src="ambient.js?v=5"></script>
+  <script src="script.js?v=8"></script>
+  <script src="game.js?v=13"></script>
 </body>
 </html>

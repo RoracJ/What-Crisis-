@@ -165,9 +165,9 @@
 
   function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const vv = window.visualViewport;
-    const cw = Math.round((vv && vv.width) || window.innerWidth);
-    const ch = Math.round((vv && vv.height) || window.innerHeight);
+    const rect = canvas.getBoundingClientRect();
+    const cw = Math.max(1, Math.round(rect.width));
+    const ch = Math.max(1, Math.round(rect.height));
     canvas.width = Math.floor(cw * dpr);
     canvas.height = Math.floor(ch * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -177,6 +177,8 @@
     view.dh = C.WORLD_H * scale;
     view.ox = (cw - view.dw) / 2;
     view.oy = (ch - view.dh) / 2;
+    view.left = rect.left;
+    view.top = rect.top;
   }
 
   function sx(x) {
@@ -188,12 +190,10 @@
   }
 
   function toWorld(clientX, clientY) {
-    const vv = window.visualViewport;
-    const ox = (vv && vv.offsetLeft) || 0;
-    const oy = (vv && vv.offsetTop) || 0;
+    const rect = canvas.getBoundingClientRect();
     return {
-      x: (clientX - ox - view.ox) / view.scale,
-      y: (clientY - oy - view.oy) / view.scale
+      x: (clientX - rect.left - view.ox) / view.scale,
+      y: (clientY - rect.top - view.oy) / view.scale
     };
   }
 

@@ -4,6 +4,7 @@
   audio.loop = true;
   audio.preload = 'auto';
   const video = document.getElementById('player-video');
+  if (video) video.preload = 'metadata';
   const artLink = document.getElementById('player-art-link');
   const trackListEl = document.getElementById('track-list');
   const btnPlay = document.getElementById('btn-play');
@@ -49,7 +50,7 @@
     const current = video.getAttribute('src') || '';
     if (current !== next) {
       video.pause();
-      configureTrackInteriorVideo(video, track);
+      configureTrackInteriorVideo(video, track, { preload: 'auto' });
       muteInterior();
       video.load();
     } else {

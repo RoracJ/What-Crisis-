@@ -41,6 +41,7 @@
   let pointer = null;
   let pointerOrigin = null;
   let pointerMoved = false;
+  let tapOnPlayer = false;
   let jumpPulse = false;
 
   function ensureMusic() {
@@ -203,11 +204,10 @@
   }
 
   function viewportSize() {
-    const vv = window.visualViewport;
-    return {
-      cw: Math.round((vv && vv.width) || window.innerWidth),
-      ch: Math.round((vv && vv.height) || window.innerHeight)
-    };
+    const rect = canvas.getBoundingClientRect();
+    const cw = Math.max(1, Math.round(rect.width));
+    const ch = Math.max(1, Math.round(rect.height));
+    return { cw, ch, left: rect.left, top: rect.top };
   }
 
   function resize() {
@@ -247,12 +247,10 @@
   }
 
   function toWorld(clientX, clientY) {
-    const vv = window.visualViewport;
-    const ox = (vv && vv.offsetLeft) || 0;
-    const oy = (vv && vv.offsetTop) || 0;
+    const { left, top } = viewportSize();
     return {
-      x: (clientX - ox - view.ox) / view.scale,
-      y: (clientY - oy - view.oy) / view.scale
+      x: (clientX - left - view.ox) / view.scale,
+      y: (clientY - top - view.oy) / view.scale
     };
   }
 
@@ -365,12 +363,28 @@
     scheduleSpawn(C.HEAD_WAVE_NEXT_MS || 0);
   }
 
+  function nearestPlatformY(y) {
+    let best = C.TIERS[0].y;
+    let bestDist = Math.abs(y - best);
+    for (let i = 1; i < C.TIERS.length; i += 1) {
+      const ty = C.TIERS[i].y;
+      const d = Math.abs(y - ty);
+      if (d < bestDist) {
+        bestDist = d;
+        best = ty;
+      }
+    }
+    return best;
+  }
+
   function killPlayer() {
     if (dead || reachedTop || death) return;
     dead = true;
+    /* Plant the mushroom-cloud base on the nearest platform top (not mid-air). */
+    const platformY = nearestPlatformY(player.y);
     death = {
       x: player.x,
-      y: player.y - C.PLAYER_HEIGHT * 0.5,
+      y: platformY + (C.FIREBALL_Y_NUDGE || 0),
       h: C.PLAYER_HEIGHT
     };
     if (deathFlash) {
@@ -465,11 +479,36 @@
     return keys.has(name);
   }
 
+  function playerSpriteSize() {
+    const h = C.PLAYER_HEIGHT;
+    const spr = sprites.player;
+    const w = spr ? h * (spr.w / spr.h) : h * 0.38;
+    return { w, h };
+  }
+
+  /* Full visible businessman (head→feet) + small touch margin. Feet at player.y. */
+  function playerTapBox() {
+    if (!player) return null;
+    const { w, h } = playerSpriteSize();
+    const margin = C.PLAYER_TAP_MARGIN || 12;
+    return {
+      x: player.x - w / 2 - margin,
+      y: player.y - h - margin,
+      w: w + margin * 2,
+      h: h + margin * 2
+    };
+  }
+
+  function pointInBox(px, py, box) {
+    return !!(box && px >= box.x && px <= box.x + box.w && py >= box.y && py <= box.y + box.h);
+  }
+
   function updatePlayer(dt) {
     if (dead || reachedTop) return;
 
     const movePx = C.TOUCH_MOVE_PX || 16;
-    const pointerSteer = pointer && pointerMoved;
+    /* Steer while holding off-character, or after dragging from a character press. */
+    const pointerSteer = pointer && (!tapOnPlayer || pointerMoved);
     const left = keyHeld('arrowleft') || keyHeld('a')
       || (pointerSteer && pointer.x < player.x - movePx);
     const right = keyHeld('arrowright') || keyHeld('d')
@@ -589,6 +628,8 @@
   }
 
   function updateHeads(dt) {
+    const bottomTier = tierById('bottom');
+    const pitY = bottomTier ? bottomTier.y + C.HEAD_RADIUS + 24 : C.WORLD_H;
     const keep = [];
     for (let i = 0; i < heads.length; i += 1) {
       const head = heads[i];
@@ -610,6 +651,14 @@
         head.vy += C.GRAVITY * dt;
         head.y += head.vy * dt;
         head.x += head.vx * C.HEAD_DROP_DRIFT * dt;
+
+        /* Falling off the bottom of the page — leave play, never a kill by itself. */
+        if (head.dropTo == null) {
+          if (head.y > C.WORLD_H + 20) continue;
+          keep.push(head);
+          continue;
+        }
+
         const next = tierById(head.dropTo);
         const landY = next ? next.y - C.HEAD_RADIUS : C.WORLD_H + 80;
         if (head.y >= landY) {
@@ -630,7 +679,7 @@
         }
       }
 
-      if (head.x < -40 || head.x > C.WORLD_W + 40 || head.y > C.WORLD_H + 50) continue;
+      if (head.x < -40 || head.x > C.WORLD_W + 40 || head.y > pitY + 80) continue;
       keep.push(head);
     }
     heads = keep;
@@ -662,8 +711,14 @@
   function checkCollisions() {
     if (dead || reachedTop || !player) return;
     const box = playerHurtBox();
+    const bottomTier = tierById('bottom');
+    const pitY = bottomTier ? bottomTier.y + C.HEAD_RADIUS + 20 : C.WORLD_H;
     for (let i = 0; i < heads.length; i += 1) {
-      if (circleHitsBox(heads[i].x, heads[i].y, C.HEAD_HURT_RADIUS, box)) {
+      const head = heads[i];
+      /* Heads that have fallen past the bottom platform are gone from play — not lethal. */
+      if (head.y > pitY) continue;
+      if (head.state === 'drop' && head.dropTo == null) continue;
+      if (circleHitsBox(head.x, head.y, C.HEAD_HURT_RADIUS, box)) {
         killPlayer();
         return;
       }
@@ -782,6 +837,11 @@
       const box = playerHurtBox();
       ctx.strokeStyle = 'rgba(255, 220, 80, 0.9)';
       ctx.strokeRect(sx(box.x), sy(box.y), box.w * view.scale, box.h * view.scale);
+      const tap = playerTapBox();
+      if (tap) {
+        ctx.strokeStyle = 'rgba(80, 180, 255, 0.85)';
+        ctx.strokeRect(sx(tap.x), sy(tap.y), tap.w * view.scale, tap.h * view.scale);
+      }
     }
     ctx.restore();
   }
@@ -848,7 +908,8 @@
         drawFallbackPerson(player.x, player.y, C.PLAYER_HEIGHT, '#2a2420');
       }
     } else if (death && sprites.fireball) {
-      drawSprite(sprites.fireball, death.x, death.y, death.h, { center: true });
+      /* Bottom-aligned: death.y is the platform top the cloud sits on. */
+      drawSprite(sprites.fireball, death.x, death.y, death.h);
     }
 
     drawDebug();
@@ -975,6 +1036,7 @@
     pointer = null;
     pointerOrigin = null;
     pointerMoved = false;
+    tapOnPlayer = false;
     fromTouch = false;
     gesturePointerId = null;
   }
@@ -1005,10 +1067,14 @@
     if (touchLike) noteTouch(now);
     pointerOrigin = { x: pt.x, y: pt.y };
     pointer = toWorld(pt.x, pt.y);
-    const movePx = C.TOUCH_MOVE_PX || 16;
-    pointerMoved = !!(player && (
-      Math.abs(pointer.x - player.x) > movePx || Math.abs(pointer.y - player.y) > movePx
-    ));
+    /*
+     * BUGFIX: previously pointerMoved was set true whenever the press was
+     * more than TOUCH_MOVE_PX from the player's FEET (player.y). Taps on
+     * head/torso therefore never counted as jumps. Jump requires a press
+     * on the full visible sprite; steering uses off-sprite holds / drags.
+     */
+    tapOnPlayer = pointInBox(pointer.x, pointer.y, playerTapBox());
+    pointerMoved = false;
     startMusic();
     return true;
   }
@@ -1024,7 +1090,9 @@
   }
 
   function endAim() {
-    if (pointerOrigin && !pointerMoved && !dead && !reachedTop) jumpPulse = true;
+    if (pointerOrigin && !pointerMoved && tapOnPlayer && !dead && !reachedTop) {
+      jumpPulse = true;
+    }
     clearPointer();
   }
 
@@ -1092,7 +1160,8 @@
     if (event.cancelable) event.preventDefault();
     startMusic();
     if (performance.now() - lastBeginAt < 500) return;
-    jumpPulse = true;
+    const wpt = toWorld(event.clientX, event.clientY);
+    if (pointInBox(wpt.x, wpt.y, playerTapBox())) jumpPulse = true;
   }
 
   function onContextMenu(event) {

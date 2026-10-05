@@ -17,7 +17,8 @@ window.CrisisAmbient = (() => {
     if (!players[name]) {
       const audio = new Audio(sources[name]);
       audio.loop = true;
-      audio.preload = 'auto';
+      /* Don't download every scene track on first unlock — only current play(). */
+      audio.preload = 'none';
       players[name] = audio;
     }
     return players[name];
@@ -65,19 +66,38 @@ window.CrisisAmbient = (() => {
     muteDecorativeVideos();
   }
 
+  /* Likely next ambient after the current scene (hidden path). */
+  const NEXT = {
+    home: null,
+    street: 'labOff',
+    labOff: 'labOn',
+    labOn: 'gallery',
+    gallery: null
+  };
+
+  function warm(name) {
+    if (!name || !sources[name]) return;
+    const audio = get(name);
+    if (audio) audio.preload = 'auto';
+  }
+
   function unlock() {
-    Object.keys(sources).forEach(get);
+    /* After a real gesture: warm street only if the game layer is reachable. */
+    if (!window.SiteAccess || window.SiteAccess.allows('game')) warm('street');
   }
 
   function play(name) {
     if (!sources[name]) return;
     signalOtherTabs();
     const audio = get(name);
+    audio.preload = 'auto';
     stopAllAudio(audio);
     muteDecorativeVideos();
     current = name;
     audio.volume = 1;
     if (audio.paused) audio.play().catch(() => {});
+    /* Staged: start fetching the following scene while this one plays. */
+    warm(NEXT[name]);
   }
 
   function pauseCurrent() {
@@ -124,6 +144,7 @@ window.CrisisAmbient = (() => {
     pauseCurrent,
     muteDecorativeVideos,
     unlock,
+    warm,
     get current() {
       return current;
     }

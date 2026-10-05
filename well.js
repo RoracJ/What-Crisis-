@@ -29,9 +29,9 @@
   let distortRaf = 0;
   const TWIRL_SIZE = 96;
 
-  const OBJECT_SRC = 'assets/game/Object.png';
+  const OBJECT_SRC = 'assets/game/web/Object.png';
   const LAB_ON_SRC = 'audio/Lab 2.mp3';
-  const PORTAL_SRC = 'videos/portal.mp4?v=1';
+  const PORTAL_SRC = 'videos/web/portal-end.mp4';
   const GALLERY_AUDIO_SRC = 'audio/git jules.mp3';
   const STOP_KEY = 'wc-ambient-stop';
 
@@ -85,12 +85,12 @@
 
   const labOnAudio = new Audio(LAB_ON_SRC);
   labOnAudio.loop = true;
-  labOnAudio.preload = 'auto';
+  labOnAudio.preload = 'metadata';
   labOnAudio.hidden = true;
   document.body.appendChild(labOnAudio);
 
   const galleryEndAudio = new Audio(GALLERY_AUDIO_SRC);
-  galleryEndAudio.preload = 'auto';
+  galleryEndAudio.preload = 'none';
   galleryEndAudio.hidden = true;
   document.body.appendChild(galleryEndAudio);
 

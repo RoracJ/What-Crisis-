@@ -52,7 +52,7 @@ body.crisis-game3-open {
   inset: 0;
   z-index: 6;
   background:
-    url("assets/game/Fire.png") center center / cover no-repeat,
+    url("assets/game/web/Fire.png") center center / cover no-repeat,
     radial-gradient(circle at center, rgba(232, 64, 32, 0.85) 0%, rgba(90, 8, 0, 0.55) 55%, rgba(0, 0, 0, 0.2) 100%);
   mix-blend-mode: screen;
   opacity: 0;

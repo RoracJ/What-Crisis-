@@ -14,15 +14,15 @@ window.CrisisGame2Config = {
   WORLD_W: 480,
   WORLD_H: 640,
 
-  PLAYER_SRC: 'assets/game/Headed.png',
-  THROWER_SRC: 'assets/game/Headless.png',
-  FIREBALL_SRC: 'assets/game/Fireball.png',
-  OBJECT_SRC: 'assets/game/Object.png',
-  SPACE_SRC: 'assets/well-final.jpg',
+  PLAYER_SRC: 'assets/game/web/Headed.jpg',
+  THROWER_SRC: 'assets/game/web/Headless.jpg',
+  FIREBALL_SRC: 'assets/game/web/Fireball.png',
+  OBJECT_SRC: 'assets/game/web/Object.png',
+  SPACE_SRC: 'assets/game/web/well-final.jpg',
   SPACE_FOCUS_X: 0.178,
   SPACE_FOCUS_Y: 0.219,
   MUSIC_SRC: 'audio/Game.mp3',
-  HEAD_SRC: 'assets/game/Head.png',
+  HEAD_SRC: 'assets/game/web/Head.png',
 
   PLAYER_SPEED: 132,
   PLAYER_JUMP: 430,
@@ -34,6 +34,15 @@ window.CrisisGame2Config = {
   PLAYER_START_X: 86,
   PLAYER_START_TIER: 'bottom',
   PLAYER_HURT: { xFrac: 0.30, yFrac: 0.42, yBias: 0.12 },
+  /* Extra world-px around the full visible sprite for touch jump (phone-first). */
+  PLAYER_TAP_MARGIN: 18,
+
+  /*
+   * Death fireball: bottom of the mushroom cloud sits on the nearest
+   * platform top. Positive nudge tucks the flared base slightly into
+   * the platform so it reads planted, not hovering.
+   */
+  FIREBALL_Y_NUDGE: 4,
 
   THROWER_X: 78,
   THROWER_TIER: 'top',
@@ -65,8 +74,8 @@ window.CrisisGame2Config = {
 
   DEATH_RESET_MS: 950,
 
-  TOUCH_TAP_PX: 14,
-  TOUCH_MOVE_PX: 16,
+  TOUCH_TAP_PX: 18,
+  TOUCH_MOVE_PX: 20,
 
   PLATFORM_THICKNESS: 14,
   LADDER_WIDTH: 22,
@@ -88,7 +97,9 @@ window.CrisisGame2Config = {
   DROPS: [
     { from: 'top', x: 404, to: 'high' },
     { from: 'high', x: 76, to: 'low' },
-    { from: 'low', x: 404, to: 'bottom' }
+    { from: 'low', x: 404, to: 'bottom' },
+    /* Bottom rolls left — fall off the end into the pit (despawn, not lethal). */
+    { from: 'bottom', x: 48, to: null }
   ],
 
   COLORS: {

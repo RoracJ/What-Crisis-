@@ -155,6 +155,18 @@ body {
   outline-offset: 4px;
 }
 
+@media (hover: none) and (pointer: coarse) {
+  .portal-open {
+    width: max(calc(var(--portal-inner-size) * 2.2), 48px);
+    height: max(calc(var(--portal-inner-size) * 2.2), 48px);
+    touch-action: manipulation;
+  }
+
+  .game-trigger {
+    touch-action: manipulation;
+  }
+}
+
 .hero-stage {
   --home-unlock-x: 67.4%;
   --home-unlock-y: 93.6%;
@@ -204,6 +216,15 @@ body {
 
   .game-trigger {
     z-index: 4;
+    /* Invisible forgiving hit area — visible crowd character unchanged. */
+    width: max(var(--game-trigger-w), 56px);
+    height: max(var(--game-trigger-h), 96px);
+    touch-action: manipulation;
+  }
+
+  .home-unlock input {
+    min-height: 44px;
+    font-size: clamp(0.8rem, 3.6vw, 1.05rem);
   }
 }
 

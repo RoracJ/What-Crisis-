@@ -81,8 +81,23 @@ body {
   background: transparent;
   cursor: pointer;
   display: block;
-  overflow: hidden;
+  overflow: visible;
   z-index: 2;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .gallery-portal::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 64px);
+    height: max(100%, 64px);
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+  }
 }
 
 .gallery-portal-clip {
